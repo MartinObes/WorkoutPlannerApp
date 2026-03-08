@@ -10,7 +10,7 @@ public class Enums
 
     public enum LoadType
     {
-        weight,
-        percentage
+        Weight,
+        Percentage
     }
 }
