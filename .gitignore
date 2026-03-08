@@ -3,6 +3,21 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# JetBrains Rider / IntelliJ / WebStorm / etc.
+.idea/
+*.sln.iml
+*.iws
+*.ipr
+
+# Rider / ReSharper caches (often appear in .NET solutions)
+**/.Rider*/
+**/_ReSharper*/
+**/*.[Rr]e[Ss]harper
+**/*.DotSettings.user
+
+# JetBrains local history (if enabled)
+**/.idea/**/workspace.xml
+
 # User-specific files
 *.rsuser
 *.suo
