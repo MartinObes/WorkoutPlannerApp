@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WorkoutPlanner.Domain\WorkoutPlanner.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

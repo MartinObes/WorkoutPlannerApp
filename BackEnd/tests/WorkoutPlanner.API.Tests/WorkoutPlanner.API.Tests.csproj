@@ -17,4 +17,8 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WorkoutPlanner.API\WorkoutPlanner.API.csproj" />
+  </ItemGroup>
+
 </Project>

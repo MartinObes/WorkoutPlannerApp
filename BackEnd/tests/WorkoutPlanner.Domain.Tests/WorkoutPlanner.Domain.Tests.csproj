@@ -16,4 +16,8 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WorkoutPlanner.Domain\WorkoutPlanner.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
