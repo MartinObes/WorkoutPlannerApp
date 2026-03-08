@@ -23,6 +23,7 @@ public class UserLogic : IUserLogic
         
         return new User
         {
+            Id = Guid.NewGuid(),
             Name = $"{name.Trim()} {surname.Trim()}",
             Email = email,
             Role = role,
@@ -30,6 +31,42 @@ public class UserLogic : IUserLogic
         };
     }
     
+    public User UpdateUser(User user, string? password, string? name, string? surname, string? email, Enums.UserRole? role)
+    {
+        if (user == null) throw new ArgumentException("User cannot be null.");
+        
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            user.PasswordHash = password;
+        }
+        
+        if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(surname))
+        {
+            if(name.Any(ch => _specialCharacters.Contains(ch))|| surname.Any(ch => _specialCharacters.Contains(ch)))
+                throw new ArgumentException("Name and surname cannot contain special characters.");
+            user.Name = $"{name.Trim()} {surname.Trim()}";
+        }
+        
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            if(!IsValidEmail(email)) throw new ArgumentException("Invalid email format.");
+            user.Email = email;
+        }
+        
+        if (role.HasValue)
+        {
+            User.ValidateRole(role.Value);
+            user.Role = role.Value;
+        }
+
+        return user;
+    }
+    
+    public void DeleteUser(User user)
+    {
+        if (user == null) throw new ArgumentNullException(nameof(user), "User cannot be null.");
+        // Logic to delete user from database or collection
+    }
 
     private bool IsValidEmail(string email)
     {

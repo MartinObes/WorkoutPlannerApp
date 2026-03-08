@@ -10,4 +10,11 @@
     <ProjectReference Include="..\WorkoutPlanner.Domain\WorkoutPlanner.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Evaluation\" />
+    <Folder Include="Excercises\" />
+    <Folder Include="WorkoutExcercise\" />
+    <Folder Include="Workouts\" />
+  </ItemGroup>
+
 </Project>
