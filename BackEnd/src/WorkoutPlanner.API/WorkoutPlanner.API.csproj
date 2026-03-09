@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WorkoutPlanner.Application\WorkoutPlanner.Application.csproj" />
+    <ProjectReference Include="..\WorkoutPlanner.Infraestructure\WorkoutPlanner.Infraestructure.csproj" />
   </ItemGroup>
 
 </Project>
