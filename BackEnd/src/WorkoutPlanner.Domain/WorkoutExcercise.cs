@@ -9,11 +9,11 @@ public class WorkoutExcercise
     public Workout Workout { get; set; } = null!;
     public Guid ExcerciseId { get; set; }
     public Excercise Excercise { get; set; } = null!;
-    public int Sets { get; private set; }
-    public int Reps { get; private set; }
-    public LoadType LoadType { get; private set; }
-    public int? Weight { get; private set; }
-    public int? Percentage { get; private set; }
+    public int Sets { get;  set; }
+    public int Reps { get;  set; }
+    public LoadType LoadType { get;  set; }
+    public int? Weight { get;  set; }
+    public int? Percentage { get;  set; }
     
     public WorkoutExcercise(int sets, int reps, LoadType loadType, int? weight = null, int? percentage = null)
     {
