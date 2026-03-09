@@ -4,16 +4,26 @@ namespace WorkoutPlanner.Domain;
 
 public class WorkoutExcercise
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public Guid WorkoutId { get; set; }
     public Workout Workout { get; set; } = null!;
     public Guid ExcerciseId { get; set; }
     public Excercise Excercise { get; set; } = null!;
-    public int sets { get; set; }
-    public int Reps { get; set; }
-    public LoadType LoadType { get; set; }
-    public int? Weight { get; set; }
-    public int? Percentage { get; set; }
+    public int Sets { get; private set; }
+    public int Reps { get; private set; }
+    public LoadType LoadType { get; private set; }
+    public int? Weight { get; private set; }
+    public int? Percentage { get; private set; }
+    
+    public WorkoutExcercise(int sets, int reps, LoadType loadType, int? weight = null, int? percentage = null)
+    {
+        Validate(sets, reps, loadType, weight, percentage);
+        Sets = sets;
+        Reps = reps;
+        LoadType = loadType;
+        Weight = weight;
+        Percentage = percentage;
+    }
     
     public static void Validate(int sets, int reps, LoadType loadType, int? weight, int? percentage)
     {
