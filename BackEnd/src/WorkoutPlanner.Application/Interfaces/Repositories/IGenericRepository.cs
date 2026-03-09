@@ -4,11 +4,12 @@ namespace WorkoutPlanner.Application.Interfaces.Repositories;
 
 public interface IGenericRepository<T> where T : class
 {
-    void Insert(T entity);
+    Task InsertAsync(T entity);
     void Update(T entity);
     void Delete(T entity);
-    IList<T> GetAll(Expression<Func<T, bool>>? predicate = null, List<string>? includes = null);
-    bool Exists(Expression<Func<T, bool>> predicate);
-    T Get(Expression<Func<T, bool>> predicate);
-    bool CheckConnection();
+    Task<IList<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, List<string>? includes = null);
+    Task<T?> GetAsync(Expression<Func<T, bool>> predicate, List<string>? includes = null);
+    Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+    Task SaveAsync();
+    Task<bool> CheckConnectionAsync();
 }

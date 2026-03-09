@@ -11,75 +11,80 @@ namespace WorkoutPlanner.Infraestructure.Repositories;
 public class GenericRepository<T>(AppDbContext context) : IGenericRepository<T>
     where T : class
 {
-    protected AppDbContext Context { get; set; } = context ?? throw new ArgumentNullException(nameof(context));
+    protected AppDbContext Context { get; } = context;
+    protected DbSet<T> DbSet => Context.Set<T>();
 
-    public virtual void Insert(T entity)
+    public virtual async Task InsertAsync(T entity)
     {
-        if(entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity), "Entity cannot be null");
-        }
-
-        Context.Set<T>().Add(entity);
-        Save();
+        await DbSet.AddAsync(entity);
     }
 
     public virtual void Update(T entity)
     {
-        Context.Entry(entity).State = EntityState.Modified;
-        Save();
+        DbSet.Update(entity);
     }
 
     public virtual void Delete(T entity)
     {
-        if(Context.Entry(entity).State == EntityState.Detached)
+        if (Context.Entry(entity).State == EntityState.Detached)
         {
-            Context.Set<T>().Attach(entity);
+            DbSet.Attach(entity);
         }
 
-        Context.Set<T>().Remove(entity);
-        Save();
+        DbSet.Remove(entity);
     }
 
-    public virtual IList<T> GetAll(Expression<Func<T, bool>>? predicate = null, List<string>? includes = null)
+    public virtual async Task<IList<T>> GetAllAsync(
+        Expression<Func<T, bool>>? predicate = null,
+        List<string>? includes = null)
     {
-        IQueryable<T> query = Context.Set<T>();
+        IQueryable<T> query = DbSet;
 
-        if(includes != null)
+        if (includes != null)
         {
-            foreach(var variable in includes)
+            foreach (var include in includes)
             {
-                query = query.Include(variable);
+                query = query.Include(include);
             }
         }
 
-        return query.Where(predicate ?? (x => true)).ToList();
-    }
-
-    public virtual bool Exists(Expression<Func<T, bool>> predicate)
-    {
-        return Context.Set<T>().Any(predicate);
-    }
-
-    public virtual T? Get(Expression<Func<T, bool>> predicate)
-    {
-        return Context.Set<T>().FirstOrDefault(predicate);
-    }
-
-    private void Save()
-    {
-        Context.SaveChanges();
-    }
-
-    public virtual bool CheckConnection()
-    {
-        try
+        if (predicate != null)
         {
-            return Context.Database.EnsureCreated();
+            query = query.Where(predicate);
         }
-        catch
+
+        return await query.ToListAsync();
+    }
+
+    public virtual async Task<T?> GetAsync(
+        Expression<Func<T, bool>> predicate,
+        List<string>? includes = null)
+    {
+        IQueryable<T> query = DbSet;
+
+        if (includes != null)
         {
-            return false;
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
         }
+
+        return await query.FirstOrDefaultAsync(predicate);
+    }
+
+    public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await DbSet.AnyAsync(predicate);
+    }
+
+    public virtual async Task SaveAsync()
+    {
+        await Context.SaveChangesAsync();
+    }
+
+    public virtual async Task<bool> CheckConnectionAsync()
+    {
+        return await Context.Database.CanConnectAsync();
     }
 }
