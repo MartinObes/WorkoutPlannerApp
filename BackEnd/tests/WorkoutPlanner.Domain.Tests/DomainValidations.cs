@@ -126,4 +126,47 @@ public class DomainValidations
         //Assert
         act.Should().Throw<ArgumentException>().WithMessage("Invalid user role.");
     }
+    
+    //Evaluation Validation
+    [TestMethod]
+    public void ValidateEvaluation_WithValidAttributes_ShouldNotThrowException()
+    {
+        //Arrange
+        int reps = 10;
+        int weight = 100;
+        
+        //Act
+        Action act = () => Evaluation.Validate(reps, weight);
+        
+        //Assert
+        act.Should().NotThrow();
+    }
+    
+    [TestMethod]
+    public void ValidateEvaluation_WithZeroReps_ShouldThrowArgumentException()
+    {
+        //Arrange
+        int reps = 0;
+        int weight = 100;
+        
+        //Act
+        Action act = () => Evaluation.Validate(reps, weight);
+        
+        //Assert
+        act.Should().Throw<ArgumentException>().WithMessage("Reps must be greater than 0");
+    }
+    
+    [TestMethod]
+    public void ValidateEvaluation_WithNegativeWeight_ShouldThrowArgumentException()
+    {
+        //Arrange
+        int reps = 10;
+        int weight = -1;
+        
+        //Act
+        Action act = () => Evaluation.Validate(reps, weight);
+        
+        //Assert
+        act.Should().Throw<ArgumentException>().WithMessage("Weight must be greater than or equal to 0");
+    }
 }

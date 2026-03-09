@@ -1,6 +1,20 @@
-﻿namespace WorkoutPlanner.Application.Evaluations;
+﻿using WorkoutPlanner.Domain;
 
-public class EvaluationLogic
+namespace WorkoutPlanner.Application.Evaluations;
+
+public class EvaluationLogic : IEvaluationLogic
 {
-    
+    public Evaluation CreateEvaluation(Guid playerId, Guid excerciseId, int reps, int weight)
+    {
+        Evaluation.Validate(reps, weight);
+        return new Evaluation
+        {
+            PlayerId = playerId,
+            ExcerciseId = excerciseId,
+            Reps = reps,
+            Weight = weight,
+            Date = DateTime.UtcNow
+        };
+    }
+
 }
