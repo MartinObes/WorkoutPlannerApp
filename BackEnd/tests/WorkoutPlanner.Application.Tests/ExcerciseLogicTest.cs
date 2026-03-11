@@ -1,5 +1,9 @@
 ﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 using WorkoutPlanner.Application.Excercises;
+using WorkoutPlanner.Application.Interfaces.Repositories;
+using WorkoutPlanner.Infraestructure.Persistence;
 
 namespace WorkoutPlanner.Application.Tests;
 
@@ -7,11 +11,15 @@ namespace WorkoutPlanner.Application.Tests;
 public class ExcerciseLogicTest
 {
     private ExcerciseLogic _excerciseLogic = null!;
+    private Mock<IExcerciseRepository> _excerciseRepositoryMock = null!;
 
     [TestInitialize]
     public void Initialize()
     {
-        _excerciseLogic = new ExcerciseLogic();
+        var mockDbContextOptions = new DbContextOptions<AppDbContext>();
+        var mockDbContext = new Mock<AppDbContext>(mockDbContextOptions);
+        _excerciseRepositoryMock = new Mock<IExcerciseRepository>(MockBehavior.Strict, mockDbContext.Object);
+        _excerciseLogic = new ExcerciseLogic(_excerciseRepositoryMock.Object);
     }
     
     [TestMethod]

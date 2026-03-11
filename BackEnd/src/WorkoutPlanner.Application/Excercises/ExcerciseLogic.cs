@@ -1,14 +1,19 @@
-﻿using WorkoutPlanner.Domain;
+﻿using WorkoutPlanner.Application.Interfaces.Repositories;
+using WorkoutPlanner.Domain;
 
 namespace WorkoutPlanner.Application.Excercises;
 
-public class ExcerciseLogic : IExcerciseLogic
+public class ExcerciseLogic (IExcerciseRepository excerciseRepository) : IExcerciseLogic
 {
-    private string _specialCharacters = "!@#$%^&*()_+[]{}|;:',.<>?/`~-=";
+    private const string SpecialCharacters = "!@#$%^&*()_+[]{}|;:',.<>?/`~-=";
+    private readonly IExcerciseRepository _excerciseRepository = excerciseRepository  ?? throw new ArgumentNullException(nameof(excerciseRepository));
+    
 
     public Excercise CreateExcercise(string name)
     {
-        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Excercise name cannot be empty."); if (name.Any(ch => _specialCharacters.Contains(ch)))
+        if (string.IsNullOrWhiteSpace(name)) 
+            throw new ArgumentException("Excercise name cannot be empty."); 
+        if (name.Any(ch => SpecialCharacters.Contains(ch)))
                 throw new ArgumentException("Excercise name cannot contain special characters.");
             
         return new Excercise 
@@ -20,7 +25,8 @@ public class ExcerciseLogic : IExcerciseLogic
     
     public void DeleteExcercise(Excercise excercise)
     {
-        // No specific logic needed for deleting an excercise in this context
-        // The actual deletion would be handled by the data access layer or repository
+        if (excercise == null) throw new ArgumentNullException(nameof(excercise), "Excercise cannot be null.");
+
+        _excerciseRepository.Delete(excercise);
     }
 }
