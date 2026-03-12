@@ -32,4 +32,21 @@ public class ExcerciseLogic (IExcerciseRepository excerciseRepository) : IExcerc
 
         _excerciseRepository.Delete(excercise);
     }
+    
+    public async Task<IList<Excercise>> GetAllExcercises()
+    {
+        return await _excerciseRepository.GetAllAsync();
+    }
+    
+    public async Task<Excercise> GetExcerciseByName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Excercise name cannot be empty.");
+        }
+        
+        var excercise = await _excerciseRepository.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        
+        return excercise;
+    }
 }

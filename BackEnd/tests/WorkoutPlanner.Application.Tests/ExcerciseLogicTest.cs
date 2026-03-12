@@ -100,4 +100,41 @@ public class ExcerciseLogicTest
         act.Should().Throw<ArgumentNullException>().WithMessage("Excercise cannot be null.*");
     }
     
+    [TestMethod]
+    public async Task GetExcerciseByName_WhenExcerciseExists_ReturnsExcercise()
+    {
+        // Arrange
+        string name = "Deadlift";
+        var excercise = new Excercise { Id = Guid.NewGuid(), Name = name };
+        _excerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase), null))
+            .ReturnsAsync(excercise);
+        
+        // Act
+        var result = await _excerciseLogic.GetExcerciseByName(name);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.Name.Should().Be(name);
+        result.Id.Should().Be(excercise.Id);
+        _excerciseRepositoryMock.Verify(repo => repo.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase), null), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task GetExcerciseByName_WhenExcerciseDoesNotExist_ReturnsNull()
+    {
+        // Arrange
+        string name = "NonExistingExcercise";
+        _excerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase), null))
+            .ReturnsAsync((Excercise)null!);
+        
+        // Act
+        var result = await _excerciseLogic.GetExcerciseByName(name);
+        
+        // Assert
+        result.Should().BeNull();
+        _excerciseRepositoryMock.Verify(repo => repo.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase), null), Times.Once);
+    }
+
 }
