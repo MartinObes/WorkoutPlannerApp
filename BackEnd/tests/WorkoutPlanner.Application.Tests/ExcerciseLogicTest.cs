@@ -136,5 +136,42 @@ public class ExcerciseLogicTest
         result.Should().BeNull();
         _excerciseRepositoryMock.Verify(repo => repo.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase), null), Times.Once);
     }
+    
+    [TestMethod]
+    public void GetExcerciseByName_WhenNameIsEmpty_ThrowsArgumentException()
+    {
+        // Arrange
+        string name = "   ";
+        
+        // Act
+        Action act = () => _excerciseLogic.GetExcerciseByName(name).GetAwaiter().GetResult();
+        
+        // Assert
+        act.Should().Throw<ArgumentException>().WithMessage("Excercise name cannot be empty.");
+    }
+    
+    [TestMethod]
+    public async Task GetAllExcercises_ReturnsListOfExcercises()
+    {
+        // Arrange
+        var excercises = new List<Excercise>
+        {
+            new Excercise { Id = Guid.NewGuid(), Name = "Bench Press" },
+            new Excercise { Id = Guid.NewGuid(), Name = "Pull Up" }
+        };
+        _excerciseRepositoryMock
+            .Setup(repo => repo.GetAllAsync(null, null))
+            .ReturnsAsync(excercises);
+        
+        // Act
+        var result = await _excerciseLogic.GetAllExcercises();
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2);
+        result[0].Name.Should().Be("Bench Press");
+        result[1].Name.Should().Be("Pull Up");
+        _excerciseRepositoryMock.Verify(repo => repo.GetAllAsync(null, null), Times.Once);
+    }
 
 }
