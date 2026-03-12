@@ -9,18 +9,22 @@ public class ExcerciseLogic (IExcerciseRepository excerciseRepository) : IExcerc
     private readonly IExcerciseRepository _excerciseRepository = excerciseRepository  ?? throw new ArgumentNullException(nameof(excerciseRepository));
     
 
-    public Excercise CreateExcercise(string name)
+    public async Task<Excercise> CreateExcercise(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) 
             throw new ArgumentException("Excercise name cannot be empty."); 
         if (name.Any(ch => SpecialCharacters.Contains(ch)))
                 throw new ArgumentException("Excercise name cannot contain special characters.");
             
-        return new Excercise 
+        var excercise =  new Excercise 
         {
             Id = Guid.NewGuid(),
             Name = name.Trim()
         };
+        
+        await _excerciseRepository.InsertAsync(excercise);
+
+        return excercise;
     }
     
     public void DeleteExcercise(Excercise excercise)
