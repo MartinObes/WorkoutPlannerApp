@@ -23,7 +23,6 @@ public class ExcerciseLogic (IExcerciseRepository excerciseRepository) : IExcerc
         };
         
         await _excerciseRepository.InsertAsync(excercise);
-
         return excercise;
     }
     

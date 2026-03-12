@@ -16,7 +16,6 @@ public class ExcerciseLogicTest
 {
     private ExcerciseLogic _excerciseLogic = null!;
     private Mock<ExcerciseRepository> _excerciseRepositoryMock = null!;
-    private Mock<AppDbContext> _mockDbContext = null!;
     private readonly DbContextOptions<AppDbContext> _dummyOptions = new();
 
     [TestInitialize]
@@ -48,7 +47,7 @@ public class ExcerciseLogicTest
     }
     
     [TestMethod]
-    public async Task CreateExcercise_WhenNameContainsSpecialCharacters_ThrowsArgumentException()
+    public void CreateExcercise_WhenNameContainsSpecialCharacters_ThrowsArgumentException()
     {
         // Arrange
         string name = "Push@Up";
@@ -61,7 +60,7 @@ public class ExcerciseLogicTest
     }
     
     [TestMethod]
-    public async Task CreateExcercise_WhenNameIsEmpty_ThrowsArgumentException()
+    public void CreateExcercise_WhenNameIsEmpty_ThrowsArgumentException()
     {
         // Arrange
         string name = "   ";
