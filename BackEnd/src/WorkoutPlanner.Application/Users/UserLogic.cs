@@ -107,7 +107,13 @@ public class UserLogic (IUserRepository userRepository) : IUserLogic
     public async Task<User> GetUserByName(string name)
     {
         var normalizedName = NormalizeName(name);
-        return await _userRepository.GetAsync(u => u.Name == normalizedName);
+        var user = await _userRepository.GetAsync(u => u.Name == normalizedName);
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user), "User cannot be null.");
+        }
+
+        return user;
     }
 
     public async Task<IList<User>> GetAllUsers()

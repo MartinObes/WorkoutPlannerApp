@@ -46,6 +46,10 @@ public class ExcerciseLogic (IExcerciseRepository excerciseRepository) : IExcerc
         }
         
         var excercise = await _excerciseRepository.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (excercise == null)
+        {
+            throw new ArgumentNullException(nameof(excercise), "Excercise cannot be null.");
+        }
         
         return excercise;
     }

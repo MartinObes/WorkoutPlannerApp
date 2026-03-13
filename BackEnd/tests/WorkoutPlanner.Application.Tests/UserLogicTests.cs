@@ -465,17 +465,17 @@ public class UserLogicTests
     }
 
     [TestMethod]
-    public async Task GetUserByName_WhenUserDoesNotExist_ReturnsNull()
+    public void GetUserByName_WhenUserDoesNotExist_ThrowsArgumentNullException()
     {
         // Arrange
         string name = "John Doe";
         _userRepositoryMock.Setup(repo => repo.GetAsync(u => u.Name == name, null)).ReturnsAsync((User)null!);   
         
         // Act
-        var result = await _userLogic.GetUserByName(name);
+        Action act = () => _userLogic.GetUserByName(name).GetAwaiter().GetResult();
         
         // Assert
-        result.Should().BeNull();
+        act.Should().Throw<ArgumentNullException>().WithMessage("User cannot be null. (Parameter 'user')");
         _userRepositoryMock.Verify(repo => repo.GetAsync(u => u.Name == name, null), Times.Once);
     }
 

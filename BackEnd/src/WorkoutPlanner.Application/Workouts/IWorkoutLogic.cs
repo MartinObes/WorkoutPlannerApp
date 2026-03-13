@@ -4,6 +4,10 @@ namespace WorkoutPlanner.Application.Workouts;
 
 public interface IWorkoutLogic
 {
-    public Workout createWorkout(string name, Guid? coachId);
-    public Workout updateWorkout(Workout workout, string name);
+    public Task<Workout> CreateWorkout(string name, Guid? coachId);
+    public Workout UpdateWorkout(Workout workout, string name, Guid? coachId);
+    public void DeleteWorkout(Workout workout);
+    public Task<bool> WorkoutExists(string name);
+    public Task<Workout> GetWorkoutByName(string name);
+    public Task<IList<Workout>> GetAllWorkouts();
 }

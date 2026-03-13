@@ -121,7 +121,7 @@ public class ExcerciseLogicTest
     }
 
     [TestMethod]
-    public async Task GetExcerciseByName_WhenExcerciseDoesNotExist_ReturnsNull()
+    public void GetExcerciseByName_WhenExcerciseDoesNotExist_ThrowsArgumentNullException()
     {
         // Arrange
         string name = "NonExistingExcercise";
@@ -130,10 +130,10 @@ public class ExcerciseLogicTest
             .ReturnsAsync((Excercise)null!);
         
         // Act
-        var result = await _excerciseLogic.GetExcerciseByName(name);
+        Action act = () => _excerciseLogic.GetExcerciseByName(name).GetAwaiter().GetResult();
         
         // Assert
-        result.Should().BeNull();
+        act.Should().Throw<ArgumentNullException>().WithMessage("Excercise cannot be null. (Parameter 'excercise')");
         _excerciseRepositoryMock.Verify(repo => repo.GetAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase), null), Times.Once);
     }
     
