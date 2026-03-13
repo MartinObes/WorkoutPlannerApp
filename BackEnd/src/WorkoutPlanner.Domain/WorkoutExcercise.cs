@@ -4,7 +4,7 @@ namespace WorkoutPlanner.Domain;
 
 public class WorkoutExcercise
 {
-    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Guid Id { get;  set; } = Guid.NewGuid();
     public Guid WorkoutId { get; set; }
     public Workout Workout { get; set; } = null!;
     public Guid ExcerciseId { get; set; }
