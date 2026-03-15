@@ -263,5 +263,89 @@ public class EvaluationLogicTest
         _evaluationRepositoryMock.Verify(repo => repo.GetAllAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Once);
     }
 
+    [TestMethod]
+    public async Task CompareEvaluations_WhenFirstIsHeavier_ReturnsPositiveDifference()
+    {
+        // Arrange
+        Guid evalId1 = Guid.NewGuid();
+        Guid evalId2 = Guid.NewGuid();
+        var eval1 = new Evaluation { Id = evalId1, Weight = 120, Reps = 8, PlayerId = Guid.NewGuid(), ExcerciseId = Guid.NewGuid(), Date = DateTime.UtcNow };
+        var eval2 = new Evaluation { Id = evalId2, Weight = 90, Reps = 8, PlayerId = Guid.NewGuid(), ExcerciseId = Guid.NewGuid(), Date = DateTime.UtcNow };
+
+        _evaluationRepositoryMock
+            .SetupSequence(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null))
+            .ReturnsAsync(eval1)
+            .ReturnsAsync(eval2);
+
+        // Act
+        var result = await _evaluationLogic.CompareEvaluations(evalId1, evalId2);
+
+        // Assert
+        result.Should().Be(30);
+        _evaluationRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Exactly(2));
+    }
+
+    [TestMethod]
+    public async Task CompareEvaluations_WhenSecondIsHeavier_ReturnsNegativeDifference()
+    {
+        // Arrange
+        Guid evalId1 = Guid.NewGuid();
+        Guid evalId2 = Guid.NewGuid();
+        var eval1 = new Evaluation { Id = evalId1, Weight = 75, Reps = 10, PlayerId = Guid.NewGuid(), ExcerciseId = Guid.NewGuid(), Date = DateTime.UtcNow };
+        var eval2 = new Evaluation { Id = evalId2, Weight = 95, Reps = 10, PlayerId = Guid.NewGuid(), ExcerciseId = Guid.NewGuid(), Date = DateTime.UtcNow };
+
+        _evaluationRepositoryMock
+            .SetupSequence(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null))
+            .ReturnsAsync(eval1)
+            .ReturnsAsync(eval2);
+
+        // Act
+        var result = await _evaluationLogic.CompareEvaluations(evalId1, evalId2);
+
+        // Assert
+        result.Should().Be(-20);
+        _evaluationRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Exactly(2));
+    }
+
+    [TestMethod]
+    public void CompareEvaluations_WhenFirstEvaluationDoesNotExist_ThrowsKeyNotFoundException()
+    {
+        // Arrange
+        Guid evalId1 = Guid.NewGuid();
+        Guid evalId2 = Guid.NewGuid();
+
+        _evaluationRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null))
+            .ReturnsAsync((Evaluation)null!);
+
+        // Act
+        Action act = () => _evaluationLogic.CompareEvaluations(evalId1, evalId2).GetAwaiter().GetResult();
+
+        // Assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage($"Evaluation with id {evalId1} not found.");
+        _evaluationRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Once);
+    }
+
+    [TestMethod]
+    public void CompareEvaluations_WhenSecondEvaluationDoesNotExist_ThrowsKeyNotFoundException()
+    {
+        // Arrange
+        Guid evalId1 = Guid.NewGuid();
+        Guid evalId2 = Guid.NewGuid();
+        var eval1 = new Evaluation { Id = evalId1, Weight = 80, Reps = 8, PlayerId = Guid.NewGuid(), ExcerciseId = Guid.NewGuid(), Date = DateTime.UtcNow };
+
+        _evaluationRepositoryMock
+            .SetupSequence(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null))
+            .ReturnsAsync(eval1)
+            .ReturnsAsync((Evaluation)null!);
+
+        // Act
+        Action act = () => _evaluationLogic.CompareEvaluations(evalId1, evalId2).GetAwaiter().GetResult();
+
+        // Assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage($"Evaluation with id {evalId2} not found.");
+        _evaluationRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Exactly(2));
+    }
+
 
 }

@@ -54,4 +54,13 @@ public class EvaluationLogic(IEvaluationRepository evaluationRepository) : IEval
         var evaluations = await _evaluationRepository.GetAllAsync(e => e.ExcerciseId == excerciseId);
         return evaluations;
     }
+
+    public async Task<int> CompareEvaluations(Guid evalid1, Guid evalid2)
+    {
+        var eval1 = await GetEvaluationById(evalid1);
+        var eval2 = await GetEvaluationById(evalid2);
+
+        var result = eval1.Weight - eval2.Weight;
+        return result;
+    }
 }
