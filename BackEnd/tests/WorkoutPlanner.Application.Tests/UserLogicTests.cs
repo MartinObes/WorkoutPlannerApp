@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using WorkoutPlanner.Application.Services.HasherService;
 using WorkoutPlanner.Application.Users;
 using WorkoutPlanner.Domain;
 using WorkoutPlanner.Infraestructure.Persistence;
@@ -15,6 +16,7 @@ public class UserLogicTests
 {
     private UserLogic _userLogic = null!;
     private Mock<UserRepository> _userRepositoryMock = null!;
+    private Mock<IHasherService> _hasherServiceMock = null!;
     private readonly DbContextOptions<AppDbContext> _dummyOptions = new();
 
     [TestInitialize]
@@ -22,7 +24,8 @@ public class UserLogicTests
     {
         var mockDbContext = new Mock<AppDbContext>(_dummyOptions);
         _userRepositoryMock = new Mock<UserRepository>(MockBehavior.Strict, mockDbContext.Object);
-        _userLogic = new UserLogic(_userRepositoryMock.Object);
+        _hasherServiceMock = new Mock<IHasherService>(MockBehavior.Strict);
+        _userLogic = new UserLogic(_userRepositoryMock.Object, _hasherServiceMock.Object);
     }
     
     [TestMethod]
@@ -35,6 +38,11 @@ public class UserLogicTests
         string email = "Jdoe@gmail.com";
         UserRole role = UserRole.Player;
         Guid userId = Guid.NewGuid();
+        string hashedPassword = "hashed_password_value";
+
+        _hasherServiceMock
+            .Setup(hasher => hasher.Hash(password))
+            .Returns(hashedPassword);
         
         _userRepositoryMock
             .Setup(repo => repo.InsertAsync(It.IsAny<User>()))
@@ -49,9 +57,10 @@ public class UserLogicTests
         result.Name.Should().Be("John Doe");
         result.Email.Should().Be("Jdoe@gmail.com");
         result.Role.Should().Be(UserRole.Player);
-        result.PasswordHash.Should().Be(password);
+        result.PasswordHash.Should().Be(hashedPassword);
         result.Id.Should().NotBeEmpty();
         result.Id.Should().NotBe(userId);
+        _hasherServiceMock.Verify(hasher => hasher.Hash(password), Times.Once);
         _userRepositoryMock.Verify(repo => repo.InsertAsync(
             It.Is<User>(u => u.Name == result.Name && u.Email == result.Email && u.Role == result.Role && u.PasswordHash == result.PasswordHash)), Times.Once);
     }

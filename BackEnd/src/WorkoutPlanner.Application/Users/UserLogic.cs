@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WorkoutPlanner.Application.Interfaces.Repositories;
+using WorkoutPlanner.Application.Services.HasherService;
 using WorkoutPlanner.Domain;
 
 namespace WorkoutPlanner.Application.Users;
 
-public class UserLogic (IUserRepository userRepository) : IUserLogic
+public class UserLogic (IUserRepository userRepository, IHasherService hasherService) : IUserLogic
 {
     private readonly IUserRepository _userRepository = userRepository  ?? throw new ArgumentNullException(nameof(userRepository));
+    private readonly IHasherService _hasherService = hasherService ?? throw new ArgumentNullException(nameof(hasherService));
 
     private string _specialCharacters = "!@#$%^&*()_+[]{}|;:',.<>?/`~-=";
     
@@ -47,7 +49,7 @@ public class UserLogic (IUserRepository userRepository) : IUserLogic
             Name = $"{name.Trim()} {surname.Trim()}",
             Email = email,
             Role = role,
-            PasswordHash = password
+            PasswordHash = _hasherService.Hash(password)
         };
         
         await _userRepository.InsertAsync(user);
