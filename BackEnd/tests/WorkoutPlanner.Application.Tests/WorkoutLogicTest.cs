@@ -2,8 +2,10 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using WorkoutPlanner.Application.WorkoutExcercises;
 using WorkoutPlanner.Application.Workouts;
 using WorkoutPlanner.Domain;
+using WorkoutPlanner.Domain.AuxiliaryDomainClasses;
 using WorkoutPlanner.Infraestructure.Persistence;
 using WorkoutPlanner.Infraestructure.Repositories;
 
@@ -14,6 +16,7 @@ public class WorkoutLogicTest
 {
     private WorkoutLogic _workoutLogic = null!;
     private Mock<WorkoutRepository> _workoutRepositoryMock = null!;
+    private Mock<IWorkoutExcerciseLogic> _workoutExcerciseLogicMock = null!;
     private readonly DbContextOptions<AppDbContext> _dummyOptions = new();
     
     [TestInitialize]
@@ -21,7 +24,8 @@ public class WorkoutLogicTest
     {
         var mockDbContext = new Mock<AppDbContext>(_dummyOptions);
         _workoutRepositoryMock = new Mock<WorkoutRepository>(MockBehavior.Strict, mockDbContext.Object);
-        _workoutLogic = new WorkoutLogic(_workoutRepositoryMock.Object);
+        _workoutExcerciseLogicMock = new Mock<IWorkoutExcerciseLogic>(MockBehavior.Strict);
+        _workoutLogic = new WorkoutLogic(_workoutRepositoryMock.Object, _workoutExcerciseLogicMock.Object);
     }
     
     [TestMethod]
@@ -30,20 +34,129 @@ public class WorkoutLogicTest
         // Arrange
         string name = "Test Workout";
         Guid? coachId = Guid.NewGuid();
+        var argsList = new List<CreateWorkoutExcerciseArgs>
+        {
+            new() { ExcerciseId = Guid.NewGuid(), Reps = 10, Sets = 3, LoadType = Enums.LoadType.Weight, Weight = 80 },
+            new() { ExcerciseId = Guid.NewGuid(), Reps = 12, Sets = 4, LoadType = Enums.LoadType.Percentage, Percentage = 70 }
+        };
+
+        _workoutExcerciseLogicMock
+            .Setup(logic => logic.createWorkoutExcercise(
+                It.IsAny<Guid>(),
+                It.IsAny<Guid>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Enums.LoadType>(),
+                It.IsAny<int?>(),
+                It.IsAny<int?>()))
+            .ReturnsAsync((Guid workoutId, Guid excerciseId, int reps, int sets, Enums.LoadType loadType, int? weight, int? percentage) =>
+                new WorkoutExcercise(sets, reps, loadType, weight, percentage)
+                {
+                    WorkoutId = workoutId,
+                    ExcerciseId = excerciseId
+                });
+
         _workoutRepositoryMock
             .Setup(repo => repo.InsertAsync(It.IsAny<Workout>()))
             .Returns(Task.CompletedTask);
         
         // Act
-        var result = await _workoutLogic.CreateWorkout(name, coachId);
+        var result = await _workoutLogic.CreateWorkout(name, coachId, argsList);
         
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be(name);
         result.CoachId.Should().Be(coachId);
         result.Id.Should().NotBeEmpty();
+        result.WorkoutExcercises.Should().HaveCount(2);
+        result.WorkoutExcercises.Should().OnlyContain(we => we.WorkoutId == result.Id);
+
+        _workoutExcerciseLogicMock.Verify(logic => logic.createWorkoutExcercise(
+            It.IsAny<Guid>(),
+            argsList[0].ExcerciseId,
+            argsList[0].Reps,
+            argsList[0].Sets,
+            argsList[0].LoadType,
+            argsList[0].Weight,
+            argsList[0].Percentage), Times.Once);
+
+        _workoutExcerciseLogicMock.Verify(logic => logic.createWorkoutExcercise(
+            It.IsAny<Guid>(),
+            argsList[1].ExcerciseId,
+            argsList[1].Reps,
+            argsList[1].Sets,
+            argsList[1].LoadType,
+            argsList[1].Weight,
+            argsList[1].Percentage), Times.Once);
+
         _workoutRepositoryMock.Verify(repo => repo.InsertAsync(
-            It.Is<Workout>(w => w.Name == result.Name && w.CoachId == result.CoachId)), Times.Once);
+            It.Is<Workout>(w =>
+                w.Name == result.Name &&
+                w.CoachId == result.CoachId &&
+                w.WorkoutExcercises.Count == argsList.Count)), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task CreateWorkout_WhenWorkoutExcerciseArgsListIsEmpty_CreatesWorkoutWithoutWorkoutExcercises()
+    {
+        // Arrange
+        string name = "Cardio";
+        Guid? coachId = Guid.NewGuid();
+        var argsList = new List<CreateWorkoutExcerciseArgs>();
+
+        _workoutRepositoryMock
+            .Setup(repo => repo.InsertAsync(It.IsAny<Workout>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _workoutLogic.CreateWorkout(name, coachId, argsList);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.WorkoutExcercises.Should().BeEmpty();
+        _workoutExcerciseLogicMock.Verify(logic => logic.createWorkoutExcercise(
+            It.IsAny<Guid>(),
+            It.IsAny<Guid>(),
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Enums.LoadType>(),
+            It.IsAny<int?>(),
+            It.IsAny<int?>()), Times.Never);
+        _workoutRepositoryMock.Verify(repo => repo.InsertAsync(It.IsAny<Workout>()), Times.Once);
+    }
+
+    [TestMethod]
+    public void CreateWorkout_WhenWorkoutExcerciseCreationFails_ThrowsAndDoesNotInsertWorkout()
+    {
+        // Arrange
+        string name = "Strength";
+        Guid? coachId = Guid.NewGuid();
+        var argsList = new List<CreateWorkoutExcerciseArgs>
+        {
+            new() { ExcerciseId = Guid.NewGuid(), Reps = 8, Sets = 4, LoadType = Enums.LoadType.Weight, Weight = 90 }
+        };
+
+        _workoutExcerciseLogicMock
+            .Setup(logic => logic.createWorkoutExcercise(
+                It.IsAny<Guid>(),
+                It.IsAny<Guid>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<Enums.LoadType>(),
+                It.IsAny<int?>(),
+                It.IsAny<int?>()))
+            .ThrowsAsync(new ArgumentException("Weight must be provided"));
+
+        _workoutRepositoryMock
+            .Setup(repo => repo.InsertAsync(It.IsAny<Workout>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        Action act = () => _workoutLogic.CreateWorkout(name, coachId, argsList).GetAwaiter().GetResult();
+
+        // Assert
+        act.Should().Throw<ArgumentException>().WithMessage("Weight must be provided");
+        _workoutRepositoryMock.Verify(repo => repo.InsertAsync(It.IsAny<Workout>()), Times.Never);
     }
     
     [TestMethod]
@@ -52,16 +165,25 @@ public class WorkoutLogicTest
         // Arrange
         string name = "";
         Guid? coachId = Guid.NewGuid();
+        var argsList = new List<CreateWorkoutExcerciseArgs>();
         _workoutRepositoryMock
             .Setup(repo => repo.InsertAsync(It.IsAny<Workout>()))
             .Returns(Task.CompletedTask);
         
         // Act 
-        Action act = () => _workoutLogic.CreateWorkout(name, coachId).GetAwaiter().GetResult();
+        Action act = () => _workoutLogic.CreateWorkout(name, coachId, argsList).GetAwaiter().GetResult();
         
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Name cannot be empty. (Parameter 'name')");
         _workoutRepositoryMock.Verify(repo => repo.InsertAsync(It.IsAny<Workout>()), Times.Never);
+        _workoutExcerciseLogicMock.Verify(logic => logic.createWorkoutExcercise(
+            It.IsAny<Guid>(),
+            It.IsAny<Guid>(),
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            It.IsAny<Enums.LoadType>(),
+            It.IsAny<int?>(),
+            It.IsAny<int?>()), Times.Never);
     }
     
     [TestMethod]

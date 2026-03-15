@@ -1,13 +1,16 @@
 ﻿using WorkoutPlanner.Application.Interfaces.Repositories;
+using WorkoutPlanner.Application.WorkoutExcercises;
 using WorkoutPlanner.Domain;
+using WorkoutPlanner.Domain.AuxiliaryDomainClasses;
 
 namespace WorkoutPlanner.Application.Workouts;
 
-public class WorkoutLogic(IWorkoutRepository workoutRepository) : IWorkoutLogic
+public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcerciseLogic workoutExcerciseLogic) : IWorkoutLogic
 {
     private readonly IWorkoutRepository _workoutRepository = workoutRepository ?? throw new ArgumentNullException(nameof(workoutRepository));
+    private readonly IWorkoutExcerciseLogic _workoutExcerciseLogic = workoutExcerciseLogic ?? throw new ArgumentNullException(nameof(workoutExcerciseLogic));
 
-    public async Task<Workout> CreateWorkout(string name, Guid? coachId)
+    public async Task<Workout> CreateWorkout(string name, Guid? coachId, IList<CreateWorkoutExcerciseArgs> workoutExcerciseArgsList)
     {
         var normalizedName = NormalizeName(name);
         var workout = new Workout
@@ -16,6 +19,13 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository) : IWorkoutLogic
             Name = normalizedName,
             CoachId = coachId
         };
+        
+        foreach (var wEArgs in workoutExcerciseArgsList)
+        {
+            var workoutExcercise = await _workoutExcerciseLogic.createWorkoutExcercise(workout.Id, wEArgs.ExcerciseId, wEArgs.Reps,
+                wEArgs.Sets, wEArgs.LoadType, wEArgs.Weight, wEArgs.Percentage);
+            workout.WorkoutExcercises.Add(workoutExcercise);
+        }
 
         await _workoutRepository.InsertAsync(workout);
         return workout;
