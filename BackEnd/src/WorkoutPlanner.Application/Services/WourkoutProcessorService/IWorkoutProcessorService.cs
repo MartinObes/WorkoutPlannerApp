@@ -4,5 +4,5 @@ namespace WorkoutPlanner.Application.Services.WourkoutProcessorService;
 
 public interface IWorkoutProcessorService
 {
-    Task<List<ProcessedExercise>> ProcessWorkout(string workoutName, string username);
+    Task<IList<ProcessedExercise>> ProcessWorkout(string workoutName, string username);
 }

@@ -26,8 +26,9 @@ public class ExcerciseLogic (IExcerciseRepository excerciseRepository) : IExcerc
         return excercise;
     }
     
-    public void DeleteExcercise(Excercise excercise)
+    public async Task DeleteExcercise(string name)
     {
+        var excercise = await GetExcerciseByName(name);
         if (excercise == null) throw new ArgumentNullException(nameof(excercise), "Excercise cannot be null.");
 
         _excerciseRepository.Delete(excercise);

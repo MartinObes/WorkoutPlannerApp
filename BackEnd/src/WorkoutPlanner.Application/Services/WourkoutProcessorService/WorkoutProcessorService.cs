@@ -12,7 +12,7 @@ public class WorkoutProcessorService(IEvaluationLogic evaluationLogic, IWorkoutL
     private readonly IWorkoutLogic _workoutLogic = workoutLogic ?? throw new ArgumentNullException(nameof(workoutLogic));
     private readonly IUserLogic _userLogic = userLogic ?? throw new ArgumentNullException(nameof(userLogic));
 
-    public async Task<List<ProcessedExercise>> ProcessWorkout(string workoutName, string username)
+    public async Task<IList<ProcessedExercise>> ProcessWorkout(string workoutName, string username)
     {
         var workout = await _workoutLogic.GetWorkoutByName(workoutName);
         var user = await _userLogic.GetUserByName(username);
