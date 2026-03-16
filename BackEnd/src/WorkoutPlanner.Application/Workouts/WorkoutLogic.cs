@@ -31,8 +31,9 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         return workout;
     }
 
-    public Workout UpdateWorkout(Workout workout, string name, Guid? coachId)
+    public async Task<Workout> UpdateWorkout(Guid workoutId, string name, Guid? coachId)
     {
+        var workout = await GetWorkoutById(workoutId);
         if (workout == null) throw new ArgumentException("Workout cannot be null.");
 
         var normalizedName = NormalizeName(name);
@@ -43,8 +44,9 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         return workout;
     }
 
-    public void DeleteWorkout(Workout workout)
+    public async Task DeleteWorkout(string name)
     {
+        var workout = await GetWorkoutByName(name);
         if (workout == null)
         {
             throw new ArgumentNullException(nameof(workout), "Workout cannot be null.");
@@ -85,5 +87,16 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         }
         
         return name.Trim();
+    }
+    
+    private async Task<Workout> GetWorkoutById(Guid workoutId)
+    {
+        var workout = await _workoutRepository.GetAsync(w => w.Id == workoutId);
+        if (workout == null)
+        {
+            throw new ArgumentNullException(nameof(workout), "Workout cannot be null.");
+        }
+
+        return workout;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WorkoutPlanner.API.Controllers;
 using WorkoutPlanner.Application.Evaluations;
@@ -8,8 +9,8 @@ namespace WorkoutPlanner.API.Tests;
 [TestClass]
 public class EvaluationControllerTest
 {
-    Mock<IEvaluationLogic> _evaluationLogicMock = null!;
-    EvaluationController _controller = null!;
+    private Mock<IEvaluationLogic> _evaluationLogicMock = null!;
+    private EvaluationController _controller = null!;
     
     [TestInitialize]
     public void SetUp()
@@ -54,7 +55,7 @@ public class EvaluationControllerTest
         var result = await _controller.Delete(request);
 
         // Assert
-        result.Should().BeOfType<Microsoft.AspNetCore.Mvc.NoContentResult>();
+        result.Should().BeOfType<NoContentResult>();
         _evaluationLogicMock.Verify(logic => logic.DeleteEvaluation(evaluationId), Times.Once);
     }
     
