@@ -56,8 +56,9 @@ public class UserLogic (IUserRepository userRepository, IHasherService hasherSer
         return user;
     }
     
-    public User UpdateUser(User user, string? password, string? name, string? surname, string? email, Enums.UserRole? role)
+    public async Task<User> UpdateUser(string username, string? password, string? name, string? surname, string? email, Enums.UserRole? role)
     {
+        var user = await GetUserByName(username);
         if (user == null) throw new ArgumentException("User cannot be null.");
         
         if (!string.IsNullOrWhiteSpace(password))
@@ -90,8 +91,9 @@ public class UserLogic (IUserRepository userRepository, IHasherService hasherSer
         return user;
     }
     
-    public void DeleteUser(User user)
+    public async Task DeleteUser(string username)
     {
+        var user = await GetUserByName(username);
         if (user == null)
         {
             throw new ArgumentNullException(nameof(user), "User cannot be null.");
