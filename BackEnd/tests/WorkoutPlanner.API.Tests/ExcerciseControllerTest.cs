@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WorkoutPlanner.API.Controllers;
 using WorkoutPlanner.API.Models;
@@ -35,10 +36,10 @@ public class ExcerciseControllerTest
             var result = await _controller.GetAll();
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Excercises.Count);
-            Assert.AreEqual("Excercise1", result.Excercises[0].Name);
-            Assert.AreEqual("Excercise2", result.Excercises[1].Name);
+            result.Should().NotBeNull();
+            result.Excercises.Should().HaveCount(2);
+            result.Excercises[0].Name.Should().Be("Excercise1");
+            result.Excercises[1].Name.Should().Be("Excercise2");
             _excerciseLogicMock.Verify(logic => logic.GetAllExcercises(), Times.Once);
         }
         
@@ -55,8 +56,8 @@ public class ExcerciseControllerTest
             var result = await _controller.Create(request);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(excerciseName, result.Name);
+            result.Should().NotBeNull();
+            result.Name.Should().Be(excerciseName);
             _excerciseLogicMock.Verify(logic => logic.CreateExcercise(excerciseName), Times.Once);
         }
 
@@ -71,7 +72,7 @@ public class ExcerciseControllerTest
             var result = await _controller.Delete(excerciseName);
             
             // Assert
-            Assert.IsInstanceOfType(result, typeof(NoContentResult));
+           result.Should().BeOfType<NoContentResult>();
             _excerciseLogicMock.Verify(logic => logic.DeleteExcercise(excerciseName), Times.Once);
         }
 
@@ -87,8 +88,8 @@ public class ExcerciseControllerTest
             var result = await _controller.GetByName(excerciseName);
             
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(excerciseName, result.Name);
+            result.Should().NotBeNull();
+            result.Name.Should().Be(excerciseName);
             _excerciseLogicMock.Verify(logic => logic.GetExcerciseByName(excerciseName), Times.Once);
         }
 }

@@ -22,8 +22,9 @@ public class EvaluationLogic(IEvaluationRepository evaluationRepository) : IEval
         return eval;
     }
 
-    public void DeleteEvaluation(Evaluation evaluation)
+    public async Task DeleteEvaluation(Guid evaluationId)
     {
+        var evaluation = await GetEvaluationById(evaluationId);
         if(evaluation == null)
         {
             throw new ArgumentException("Evaluation cannot be null.");
