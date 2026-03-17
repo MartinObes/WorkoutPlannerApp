@@ -256,7 +256,7 @@ public class UserLogicTests
     }
 
     [TestMethod]
-    public void UpdateUser_WhenValidInput_ReturnsUpdatedUser()
+    public async Task UpdateUser_WhenValidInput_ReturnsUpdatedUser()
     {
         // Arrange
         var user = new User
@@ -267,13 +267,17 @@ public class UserLogicTests
             Role = UserRole.Player,
             PasswordHash = "Password123!"
         };
+        var username = user.Name;
+        _userRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null))
+            .ReturnsAsync(user);
         
         _userRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<User>()))
             .Verifiable();
         
         // Act
-        var result = _userLogic.UpdateUser(user, "NewPassword123!", "Jane", "Smith", "js@gmail.com", UserRole.Trainer);
+        var result = await _userLogic.UpdateUser(username, "NewPassword123!", "Jane", "Smith", "js@gmail.com", UserRole.Trainer);
         
         // Assert
         result.Should().NotBeNull();
@@ -281,20 +285,18 @@ public class UserLogicTests
         result.Email.Should().Be("js@gmail.com");
         result.Role.Should().Be(UserRole.Trainer);
         result.PasswordHash.Should().Be("NewPassword123!");
+        _userRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null), Times.Once);
         _userRepositoryMock.Verify(repo => repo.Update(It.Is<User>(u => u.Id == user.Id && u.Name == result.Name && u.Email == result.Email && u.Role == result.Role && u.PasswordHash == result.PasswordHash)), Times.Once);
     }
 
     [TestMethod]
-    public void UpdateUser_WhenNullUser_ThrowsArgumentException()
+    public void UpdateUser_WhenUsernameIsNull_ThrowsArgumentException()
     {
-        // Arrange
-        User user = null!;
-
         // Act
-        Action act = () => _userLogic.UpdateUser(null, null, null, null, null, null);
+        Action act = () => _userLogic.UpdateUser(null!, null, null, null, null, null).GetAwaiter().GetResult();
         
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("User cannot be null.");
+        act.Should().Throw<ArgumentException>().WithMessage("Name cannot be empty. (Parameter 'name')");
         _userRepositoryMock.Verify(repo => repo.Update(It.IsAny<User>()), Times.Never);
     }
     
@@ -310,16 +312,20 @@ public class UserLogicTests
             Role = UserRole.Player,
             PasswordHash = "Password123!"
         };
-        
+        var username = user.Name;
+        _userRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null))
+            .ReturnsAsync(user);
         _userRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<User>()))
             .Verifiable();
         
         // Act
-        Action act = () => _userLogic.UpdateUser(user, null, null, null, "invalid-email", null);
+        Action act = () => _userLogic.UpdateUser(username, null, null, null, "invalid-email", null).GetAwaiter().GetResult();
         
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Invalid email format.");
+        _userRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null), Times.Once);
         _userRepositoryMock.Verify(repo => repo.Update(It.IsAny<User>()), Times.Never);
     }
 
@@ -335,16 +341,20 @@ public class UserLogicTests
             Role = UserRole.Player,
             PasswordHash = "Password123!"
         };
-        
+        var username = user.Name;
+        _userRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null))
+            .ReturnsAsync(user);
         _userRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<User>()))
             .Verifiable();
         
         // Act
-        Action act = () => _userLogic.UpdateUser(user, null, "Jane@", "Smith", null, null);
+        Action act = () => _userLogic.UpdateUser(username, null, "Jane@", "Smith", null, null).GetAwaiter().GetResult();
         
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Name and surname cannot contain special characters.");
+        _userRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null), Times.Once);
         _userRepositoryMock.Verify(repo => repo.Update(It.IsAny<User>()), Times.Never);
     }
 
@@ -360,16 +370,20 @@ public class UserLogicTests
             Role = UserRole.Player,
             PasswordHash = "Password123!"
         };
-        
+        var username = user.Name;
+        _userRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null))
+            .ReturnsAsync(user);
         _userRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<User>()))
             .Verifiable();
         
         // Act
-        Action act = () => _userLogic.UpdateUser(user, null, "Jane", "Smith@", null, null);
+        Action act = () => _userLogic.UpdateUser(username, null, "Jane", "Smith@", null, null).GetAwaiter().GetResult();
         
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Name and surname cannot contain special characters.");
+        _userRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null), Times.Once);
         _userRepositoryMock.Verify(repo => repo.Update(It.IsAny<User>()), Times.Never);
     }
 
@@ -384,46 +398,50 @@ public class UserLogicTests
             Role = UserRole.Player,
             PasswordHash = "Password123!"
         };
-        
+        var username = user.Name;
+        _userRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null))
+            .ReturnsAsync(user);
         _userRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<User>()))
             .Verifiable();
         
         // Act
-        Action act = () => _userLogic.UpdateUser(user, null, null, null, null, (UserRole)999);
+        Action act = () => _userLogic.UpdateUser(username, null, null, null, null, (UserRole)999).GetAwaiter().GetResult();
         
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Invalid user role.");
+        _userRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null), Times.Once);
         _userRepositoryMock.Verify(repo => repo.Update(It.IsAny<User>()), Times.Never);
     }
 
     [TestMethod]
-    public void DeleteUser_WhenValidUser_CallsRepositoryDelete()
+    public async Task DeleteUser_WhenValidUser_CallsRepositoryDelete()
     {
         // Arrange
         var user = new User { Id = Guid.NewGuid(), Name = "John Doe", Email = "j@gmail.com", Role = UserRole.Player, PasswordHash = "Password123!" };
+        _userRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null))
+            .ReturnsAsync(user);
         _userRepositoryMock.Setup(repo => repo.Delete(user)).Verifiable();
         
         // Act
-        _userLogic.DeleteUser(user);
+        await _userLogic.DeleteUser(user.Name);
         
         // Assert
+        _userRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<User, bool>>>(), null), Times.Once);
         _userRepositoryMock.Verify(repo => repo.Delete(user), Times.Once);
     }
 
     [TestMethod]
-    public void DeleteUser_WhenNullUser_ThrowsArgumentNullException()
+    public void DeleteUser_WhenUsernameIsNull_ThrowsArgumentException()
     {
-        // Arrange
-        User user = null!;
-        _userRepositoryMock.Setup(repo => repo.Delete(user)).Verifiable();
-
         // Act
-        Action act = () => _userLogic.DeleteUser(user);
+        Action act = () => _userLogic.DeleteUser(null!).GetAwaiter().GetResult();
         
         // Assert
-        act.Should().Throw<ArgumentNullException>().WithMessage("User cannot be null. (Parameter 'user')");
-        _userRepositoryMock.Verify(repo => repo.Delete(user), Times.Never);
+        act.Should().Throw<ArgumentException>().WithMessage("Name cannot be empty. (Parameter 'name')");
+        _userRepositoryMock.Verify(repo => repo.Delete(It.IsAny<User>()), Times.Never);
     }
     
     [TestMethod]

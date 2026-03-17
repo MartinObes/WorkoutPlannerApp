@@ -187,41 +187,49 @@ public class WorkoutLogicTest
     }
     
     [TestMethod]
-    public void UpdateWorkout_WhenValidInput_ReturnsUpdatedWorkout()
+    public async Task UpdateWorkout_WhenValidInput_ReturnsUpdatedWorkout()
     {
         // Arrange
         var workout = new Workout { Id = Guid.NewGuid(), Name = "Old Name", CoachId = null };
         string newName = "New Name";
         Guid? newCoachId = Guid.NewGuid();
         _workoutRepositoryMock
-            .Setup(repo => repo.Update(It.IsAny<Workout>()))
-            .Verifiable();
-        
-        // Act
-        var updatedWorkout = _workoutLogic.UpdateWorkout(workout, newName, newCoachId);
-        
-        // Assert
-        updatedWorkout.Should().NotBeNull();
-        updatedWorkout.Name.Should().Be(newName);
-        updatedWorkout.CoachId.Should().Be(newCoachId);
-        _workoutRepositoryMock.Verify(repo => repo.Update(
-            It.Is<Workout>(w => w.Id == workout.Id && w.Name == newName && w.CoachId == newCoachId)), Times.Once);
-    }
-
-    [TestMethod]
-    public void UpdateWorkout_WhenNullWorkout_ThrowsArgumentException()
-    {
-        // Arrange
-        Workout workout = null!;
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null))
+            .ReturnsAsync(workout);
         _workoutRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<Workout>()))
             .Verifiable();
         
         // Act
-        Action act = () => _workoutLogic.UpdateWorkout(workout, "New Name", Guid.NewGuid());
+        var updatedWorkout = await _workoutLogic.UpdateWorkout(workout.Id, newName, newCoachId);
         
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("Workout cannot be null.");
+        updatedWorkout.Should().NotBeNull();
+        updatedWorkout.Name.Should().Be(newName);
+        updatedWorkout.CoachId.Should().Be(newCoachId);
+        _workoutRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null), Times.Once);
+        _workoutRepositoryMock.Verify(repo => repo.Update(
+            It.Is<Workout>(w => w.Id == workout.Id && w.Name == newName && w.CoachId == newCoachId)), Times.Once);
+    }
+
+    [TestMethod]
+    public void UpdateWorkout_WhenWorkoutDoesNotExist_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var workoutId = Guid.NewGuid();
+        _workoutRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null))
+            .ReturnsAsync((Workout)null!);
+        _workoutRepositoryMock
+            .Setup(repo => repo.Update(It.IsAny<Workout>()))
+            .Verifiable();
+        
+        // Act
+        Action act = () => _workoutLogic.UpdateWorkout(workoutId, "New Name", Guid.NewGuid()).GetAwaiter().GetResult();
+        
+        // Assert
+        act.Should().Throw<ArgumentNullException>().WithMessage("Workout cannot be null. (Parameter 'workout')");
+        _workoutRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null), Times.Once);
         _workoutRepositoryMock.Verify(repo => repo.Update(It.IsAny<Workout>()), Times.Never);
     }
 
@@ -232,43 +240,55 @@ public class WorkoutLogicTest
         var workout = new Workout { Id = Guid.NewGuid(), Name = "Old Name", CoachId = null };
         string name = " ";
         _workoutRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null))
+            .ReturnsAsync(workout);
+        _workoutRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<Workout>()))
             .Verifiable();
 
         // Act
-        Action act = () => _workoutLogic.UpdateWorkout(workout, name, null);
+        Action act = () => _workoutLogic.UpdateWorkout(workout.Id, name, null).GetAwaiter().GetResult();
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Name cannot be empty. (Parameter 'name')");
+        _workoutRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null), Times.Once);
         _workoutRepositoryMock.Verify(repo => repo.Update(It.IsAny<Workout>()), Times.Never);
     }
 
     [TestMethod]
-    public void DeleteWorkout_WhenValidWorkout_CallsRepositoryDelete()
+    public async Task DeleteWorkout_WhenValidWorkout_CallsRepositoryDelete()
     {
         // Arrange
         var workout = new Workout { Id = Guid.NewGuid(), Name = "Workout A", CoachId = Guid.NewGuid() };
+        _workoutRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null))
+            .ReturnsAsync(workout);
         _workoutRepositoryMock.Setup(repo => repo.Delete(workout)).Verifiable();
 
         // Act
-        _workoutLogic.DeleteWorkout(workout);
+        await _workoutLogic.DeleteWorkout(workout.Name);
 
         // Assert
+        _workoutRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null), Times.Once);
         _workoutRepositoryMock.Verify(repo => repo.Delete(workout), Times.Once);
     }
 
     [TestMethod]
-    public void DeleteWorkout_WhenNullWorkout_ThrowsArgumentNullException()
+    public void DeleteWorkout_WhenWorkoutDoesNotExist_ThrowsArgumentNullException()
     {
         // Arrange
-        Workout workout = null!;
+        string name = "Workout A";
+        _workoutRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null))
+            .ReturnsAsync((Workout)null!);
         _workoutRepositoryMock.Setup(repo => repo.Delete(It.IsAny<Workout>())).Verifiable();
 
         // Act
-        Action act = () => _workoutLogic.DeleteWorkout(workout);
+        Action act = () => _workoutLogic.DeleteWorkout(name).GetAwaiter().GetResult();
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithMessage("Workout cannot be null. (Parameter 'workout')");
+        _workoutRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Workout, bool>>>(), null), Times.Once);
         _workoutRepositoryMock.Verify(repo => repo.Delete(It.IsAny<Workout>()), Times.Never);
     }
 

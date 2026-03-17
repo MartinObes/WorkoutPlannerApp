@@ -94,7 +94,7 @@ public class EvaluationLogicTest
     }
 
     [TestMethod]
-    public void DeleteEvaluation_WhenValidEvaluation_CallsRepositoryDelete()
+    public async Task DeleteEvaluation_WhenValidEvaluation_CallsRepositoryDelete()
     {
         // Arrange
         var evaluation = new Evaluation
@@ -108,27 +108,35 @@ public class EvaluationLogicTest
         };
 
         _evaluationRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null))
+            .ReturnsAsync(evaluation);
+        _evaluationRepositoryMock
             .Setup(repo => repo.Delete(evaluation))
             .Verifiable();
 
         // Act
-        _evaluationLogic.DeleteEvaluation(evaluation);
+        await _evaluationLogic.DeleteEvaluation(evaluation.Id);
 
         // Assert
+        _evaluationRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Once);
         _evaluationRepositoryMock.Verify(repo => repo.Delete(evaluation), Times.Once);
     }
 
     [TestMethod]
-    public void DeleteEvaluation_WhenNullEvaluation_ThrowsArgumentException()
+    public void DeleteEvaluation_WhenEvaluationDoesNotExist_ThrowsKeyNotFoundException()
     {
         // Arrange
-        Evaluation evaluation = null!;
+        var evaluationId = Guid.NewGuid();
+        _evaluationRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null))
+            .ReturnsAsync((Evaluation)null!);
 
         // Act
-        Action act = () => _evaluationLogic.DeleteEvaluation(evaluation);
+        Action act = () => _evaluationLogic.DeleteEvaluation(evaluationId).GetAwaiter().GetResult();
 
         // Assert
-        act.Should().Throw<ArgumentException>().WithMessage("Evaluation cannot be null.");
+        act.Should().Throw<KeyNotFoundException>().WithMessage($"Evaluation with id {evaluationId} not found.");
+        _evaluationRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Evaluation, bool>>>(), null), Times.Once);
         _evaluationRepositoryMock.Verify(repo => repo.Delete(It.IsAny<Evaluation>()), Times.Never);
     }
 
