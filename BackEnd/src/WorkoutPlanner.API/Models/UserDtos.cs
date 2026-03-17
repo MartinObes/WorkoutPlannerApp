@@ -11,6 +11,12 @@ public class CreateUserRequestDto
     public Enums.UserRole Role { get; set; }
 }
 
+public class LoginUserRequestDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
+
 public class UpdateUserRequestDto
 {
     public Guid UserId { get; set; }

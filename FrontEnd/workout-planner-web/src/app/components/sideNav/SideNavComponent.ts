@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   ChartColumn,
   DoorOpen,
@@ -12,15 +12,15 @@ import {
 @Component({
   selector: 'app-sideNav',
   standalone: true,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, RouterLink],
   templateUrl: './sideNav.html',
 })
 export class SideNavComponent {
+  readonly userId = input<string>('');
+  readonly username = input<string>('User');
   readonly dashboardIcon = LayoutDashboard;
   readonly workoutsIcon = Dumbbell;
   readonly evaluationsIcon = ChartColumn;
   readonly settingsIcon = Settings;
   readonly logoutIcon = DoorOpen;
-
-  constructor(private router: Router) {}
 }

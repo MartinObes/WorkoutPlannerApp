@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import {
   CreateUserRequest,
   DeleteUserRequest,
+  LoginUserRequest,
   UpdateUserRequest,
   UserResponse,
   UsersResponse,
@@ -26,6 +27,10 @@ export class UserService {
 
   create(request: CreateUserRequest): Observable<UserResponse> {
     return this.http.post<UserResponse>(this.baseUrl, request);
+  }
+
+  login(request: LoginUserRequest): Observable<UserResponse> {
+    return this.http.post<UserResponse>(`${this.baseUrl}/login`, request);
   }
 
   update(name: string, request: UpdateUserRequest): Observable<UserResponse> {

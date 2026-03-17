@@ -3,24 +3,25 @@ using WorkoutPlanner.Domain;
 
 namespace WorkoutPlanner.Application.WorkoutExcercises;
 
-public class WorkoutExcerciseLogic(IWorkoutExcerciseRepository workoutExcerciseRepository): IWorkoutExcerciseLogic
+public class WorkoutExcerciseLogic(IWorkoutExcerciseRepository workoutExcerciseRepository) : IWorkoutExcerciseLogic
 {
-    private readonly IWorkoutExcerciseRepository _workoutExcerciseRepository = workoutExcerciseRepository  ?? throw new ArgumentNullException(nameof(workoutExcerciseRepository));
-    public async Task <WorkoutExcercise> createWorkoutExcercise( Guid workoutId, Guid excerciseId, int reps, int sets,
+    private readonly IWorkoutExcerciseRepository _workoutExcerciseRepository = workoutExcerciseRepository ?? throw new ArgumentNullException(nameof(workoutExcerciseRepository));
+    public async Task<WorkoutExcercise> createWorkoutExcercise(Guid workoutId, Guid excerciseId, int reps, int sets,
         Enums.LoadType loadType, int? weight = null, int? percentage = null)
     {
         WorkoutExcercise.Validate(sets, reps, loadType, weight, percentage);
 
-        var workoutExcercise= new WorkoutExcercise(sets, reps, loadType, weight, percentage)
+        var workoutExcercise = new WorkoutExcercise(sets, reps, loadType, weight, percentage)
         {
             WorkoutId = workoutId,
             ExcerciseId = excerciseId
         };
 
         await _workoutExcerciseRepository.InsertAsync(workoutExcercise);
+        await _workoutExcerciseRepository.SaveAsync();
         return workoutExcercise;
     }
-     
+
     public async Task<WorkoutExcercise> updateWorkoutExcercise(Guid workoutExcerciseId, string name, Guid workoutId,
         Guid excerciseId, int reps, int sets, Enums.LoadType loadType, int? weight = null, int? percentage = null)
     {
@@ -38,6 +39,7 @@ public class WorkoutExcerciseLogic(IWorkoutExcerciseRepository workoutExcerciseR
         workoutExcercise.Percentage = percentage;
 
         _workoutExcerciseRepository.Update(workoutExcercise);
+        await _workoutExcerciseRepository.SaveAsync();
         return workoutExcercise;
     }
 
@@ -49,6 +51,7 @@ public class WorkoutExcerciseLogic(IWorkoutExcerciseRepository workoutExcerciseR
             throw new ArgumentException("WorkoutExcercise cannot be null.");
         }
         _workoutExcerciseRepository.Delete(workoutExcercise);
+        await _workoutExcerciseRepository.SaveAsync();
     }
 
     public async Task<WorkoutExcercise> getWorkoutExcerciseById(Guid id)

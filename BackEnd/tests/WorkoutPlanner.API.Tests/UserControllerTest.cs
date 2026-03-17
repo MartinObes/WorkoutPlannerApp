@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WorkoutPlanner.API.Controllers;
 using WorkoutPlanner.API.Models;
@@ -129,6 +130,43 @@ public class UserControllerTest
         result.Email.Should().Be(updatedEmail);
         result.Role.Should().Be(Enums.UserRole.Player);
         _userLogicMock.Verify(logic => logic.UpdateUser(name, null, null, null, updatedEmail, null), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task Login_WhenCredentialsAreValid_ReturnsUser()
+    {
+        // Arrange
+        var email = "j@gmail.com";
+        var password = "Password123!";
+        var user = new User { Name = "John Doe", Email = email, Role = Enums.UserRole.Player };
+        _userLogicMock.Setup(logic => logic.LoginUser(email, password)).ReturnsAsync(user);
+        var request = new LoginUserRequestDto { Email = email, Password = password };
+
+        // Act
+        var result = await _controller.Login(request);
+
+        // Assert
+        result.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = result.Result as OkObjectResult;
+        okResult!.Value.Should().BeOfType<UserResponseDto>();
+        _userLogicMock.Verify(logic => logic.LoginUser(email, password), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task Login_WhenCredentialsAreInvalid_ReturnsUnauthorized()
+    {
+        // Arrange
+        var email = "j@gmail.com";
+        var password = "WrongPassword";
+        _userLogicMock.Setup(logic => logic.LoginUser(email, password)).ReturnsAsync((User?)null);
+        var request = new LoginUserRequestDto { Email = email, Password = password };
+
+        // Act
+        var result = await _controller.Login(request);
+
+        // Assert
+        result.Result.Should().BeOfType<UnauthorizedObjectResult>();
+        _userLogicMock.Verify(logic => logic.LoginUser(email, password), Times.Once);
     }
 
 }

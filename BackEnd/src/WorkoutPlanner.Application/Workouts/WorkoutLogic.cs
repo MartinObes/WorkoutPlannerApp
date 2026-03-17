@@ -19,7 +19,7 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
             Name = normalizedName,
             CoachId = coachId
         };
-        
+
         foreach (var wEArgs in workoutExcerciseArgsList)
         {
             var workoutExcercise = await _workoutExcerciseLogic.createWorkoutExcercise(workout.Id, wEArgs.ExcerciseId, wEArgs.Reps,
@@ -28,6 +28,7 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         }
 
         await _workoutRepository.InsertAsync(workout);
+        await _workoutRepository.SaveAsync();
         return workout;
     }
 
@@ -41,6 +42,7 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         workout.CoachId = coachId;
 
         _workoutRepository.Update(workout);
+        await _workoutRepository.SaveAsync();
         return workout;
     }
 
@@ -53,6 +55,7 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         }
 
         _workoutRepository.Delete(workout);
+        await _workoutRepository.SaveAsync();
     }
 
     public async Task<bool> WorkoutExists(string name)
@@ -85,10 +88,10 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
         {
             throw new ArgumentException("Name cannot be empty.", nameof(name));
         }
-        
+
         return name.Trim();
     }
-    
+
     private async Task<Workout> GetWorkoutById(Guid workoutId)
     {
         var workout = await _workoutRepository.GetAsync(w => w.Id == workoutId);

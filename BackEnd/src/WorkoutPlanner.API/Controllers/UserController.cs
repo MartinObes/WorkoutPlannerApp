@@ -31,6 +31,18 @@ public class UserController(IUserLogic userLogic) : ControllerBase
          return new UserResponseDto(result);
      }
 
+     [HttpPost("login")]
+     public async Task<ActionResult<UserResponseDto>> Login([FromBody] LoginUserRequestDto request)
+     {
+         var user = await _userLogic.LoginUser(request.Email, request.Password);
+         if (user == null)
+         {
+             return Unauthorized("Invalid email or password.");
+         }
+
+         return Ok(new UserResponseDto(user));
+     }
+
      [HttpPut("{name}")]
      public async Task<UserResponseDto> Update(string name, [FromBody] UpdateUserRequestDto request)
      {

@@ -8,6 +8,11 @@ export interface CreateUserRequest {
   role: UserRole;
 }
 
+export interface LoginUserRequest {
+  email: string;
+  password: string;
+}
+
 export interface UpdateUserRequest {
   userId: string;
   password?: string;
@@ -18,14 +23,6 @@ export interface UpdateUserRequest {
 }
 
 export interface DeleteUserRequest {
-  name: string;
-}
-
-export interface UserExistsRequest {
-  name: string;
-}
-
-export interface GetUserByNameRequest {
   name: string;
 }
 

@@ -17,26 +17,28 @@ public class EvaluationLogic(IEvaluationRepository evaluationRepository) : IEval
             Weight = weight,
             Date = DateTime.UtcNow
         };
-        
+
         await _evaluationRepository.InsertAsync(eval);
+        await _evaluationRepository.SaveAsync();
         return eval;
     }
 
     public async Task DeleteEvaluation(Guid evaluationId)
     {
         var evaluation = await GetEvaluationById(evaluationId);
-        if(evaluation == null)
+        if (evaluation == null)
         {
             throw new ArgumentException("Evaluation cannot be null.");
         }
-        
+
         _evaluationRepository.Delete(evaluation);
+        await _evaluationRepository.SaveAsync();
     }
 
     public async Task<Evaluation> GetEvaluationById(Guid id)
     {
         var evaluation = await _evaluationRepository.GetAsync(e => e.Id == id);
-        if(evaluation == null)
+        if (evaluation == null)
         {
             throw new KeyNotFoundException($"Evaluation with id {id} not found.");
         }

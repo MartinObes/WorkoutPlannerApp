@@ -1,0 +1,85 @@
+<main class="min-h-screen bg-slate-950 px-4 py-10">
+  <section
+    class="mx-auto w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-xl shadow-slate-950/50"
+  >
+    <h1 class="text-3xl font-bold text-white">Create account</h1>
+    <p class="mt-2 text-sm text-slate-300">Register a new user to start using Workout Planner.</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-8 space-y-4">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label class="block text-sm font-medium text-slate-200">
+          Name
+          <input
+            type="text"
+            formControlName="name"
+            class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 focus:bg-slate-700"
+          />
+        </label>
+
+        <label class="block text-sm font-medium text-slate-200">
+          Surname
+          <input
+            type="text"
+            formControlName="surname"
+            class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+          />
+        </label>
+      </div>
+
+      <label class="block text-sm font-medium text-slate-200">
+        Email
+        <input
+          type="email"
+          formControlName="email"
+          class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:bg-slate-700 focus:ring-emerald-500/20"
+          placeholder="you@email.com"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-200">
+        Password
+        <input
+          type="password"
+          formControlName="password"
+          class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:bg-slate-700 focus:ring-emerald-500/20"
+          placeholder="Minimum 8 characters"
+        />
+      </label>
+
+      <label class="block text-sm font-medium text-slate-200">
+        Role
+        <select
+          formControlName="role"
+          class="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:bg-slate-700 focus:ring-emerald-500/20"
+        >
+          @for (roleOption of userRoles; track roleOption.value) {
+            <option [value]="roleOption.value">{{ roleOption.label }}</option>
+          }
+        </select>
+      </label>
+
+      @if (errorMessage) {
+        <p class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ errorMessage }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="isSubmitting"
+        class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {{ isSubmitting ? 'Creating user...' : 'Create user' }}
+      </button>
+
+      @if (form.invalid && !isSubmitting) {
+        <p class="text-xs text-slate-400">Complete all fields correctly to enable user creation.</p>
+      }
+    </form>
+
+    <p class="mt-6 text-sm text-slate-400">
+      Already have an account?
+      <a routerLink="/login" class="font-semibold text-emerald-300 hover:text-emerald-200"
+        >Go to login</a
+      >
+    </p>
+  </section>
+</main>
