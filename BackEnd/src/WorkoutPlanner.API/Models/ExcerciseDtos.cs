@@ -7,16 +7,6 @@ public class CreateExcerciseRequestDto
     public string Name { get; set; } = string.Empty;
 }
 
-public class DeleteExcerciseRequestDto
-{
-    public string Name { get; set; } = string.Empty;
-}
-
-public class GetExcerciseByNameRequestDto
-{
-    public string Name { get; set; } = string.Empty;
-}
-
 public class ExcerciseResponseDto
 {
     public Guid Id { get; set; }

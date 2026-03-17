@@ -5,23 +5,6 @@ export interface CreateEvaluationRequest {
   weight: number;
 }
 
-export interface DeleteEvaluationRequest {
-  evaluationId: string;
-}
-
-export interface GetEvaluationsByPlayerIdRequest {
-  playerId: string;
-}
-
-export interface GetEvaluationsByExerciseIdRequest {
-  excerciseId: string;
-}
-
-export interface CompareEvaluationsRequest {
-  evaluationId1: string;
-  evaluationId2: string;
-}
-
 export interface CompareEvaluationsResponse {
   difference: number;
 }

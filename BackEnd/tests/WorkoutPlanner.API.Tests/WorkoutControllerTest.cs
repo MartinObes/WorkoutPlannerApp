@@ -14,7 +14,7 @@ public class WorkoutControllerTest
 {
     private Mock<IWorkoutLogic> _workoutLogicMock = null!;
     private WorkoutController _controller = null!;
-    
+
     [TestInitialize]
     public void SetUp()
     {
@@ -58,10 +58,10 @@ public class WorkoutControllerTest
         var createdWorkoutExcercises = workoutExcersiesArgs
             .Select(args => new WorkoutExcercise(args.Sets, args.Reps, args.LoadType, args.Weight, args.Percentage)).ToList();
         var createdWorkout = new Workout
-            { Name = workoutName, CoachId = coachId, WorkoutExcercises = createdWorkoutExcercises  };
+        { Name = workoutName, CoachId = coachId, WorkoutExcercises = createdWorkoutExcercises };
         _workoutLogicMock.Setup(logic => logic.CreateWorkout(workoutName, coachId, workoutExcersiesArgs)).ReturnsAsync(createdWorkout);
         var request = new Models.CreateWorkoutRequestDto { Name = workoutName, CoachId = coachId, WorkoutExcercises = workoutExcersiesArgs };
-        
+
 
         // Act
         var result = await _controller.Create(request);
@@ -83,11 +83,10 @@ public class WorkoutControllerTest
     {
         // Arrange
         var workoutName = "WorkoutToDelete";
-        var request = new DeleteWorkoutRequestDto { Name = workoutName };
         _workoutLogicMock.Setup(logic => logic.DeleteWorkout(workoutName)).Returns(Task.CompletedTask);
 
         // Act
-        var result = await _controller.Delete(request);
+        var result = await _controller.Delete(workoutName);
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
@@ -101,17 +100,16 @@ public class WorkoutControllerTest
         var workoutName = "ExistingWorkout";
         var workout = new Workout { Name = workoutName };
         _workoutLogicMock.Setup(logic => logic.GetWorkoutByName(workoutName)).ReturnsAsync(workout);
-        var request = new GetWorkoutByNameRequestDto { Name = workoutName };
-        
+
         // Act
-        var result = await _controller.GetByName(request);
-        
+        var result = await _controller.GetByName(workoutName);
+
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be(workoutName);
         _workoutLogicMock.Verify(logic => logic.GetWorkoutByName(workoutName), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task Update_ReturnsUpdatedWorkout()
     {

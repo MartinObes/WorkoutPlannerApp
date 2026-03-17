@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-
+import { SideNavComponent } from './components/sideNav/SideNavComponent';
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [SideNavComponent],
+  template: `<app-sideNav></app-sideNav>`,
+  styles: [],
 })
 export class App {
   protected readonly title = signal('workout-planner-web');

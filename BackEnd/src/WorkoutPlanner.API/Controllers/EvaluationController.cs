@@ -17,38 +17,38 @@ public class EvaluationController(IEvaluationLogic evaluationLogic) : Controller
         return new EvaluationResponseDto(result);
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> Delete([FromBody] DeleteEvaluationRequestDto request)
+    [HttpDelete("{evaluationId:guid}")]
+    public async Task<IActionResult> Delete(Guid evaluationId)
     {
-        await _evaluationLogic.DeleteEvaluation(request.EvaluationId);
+        await _evaluationLogic.DeleteEvaluation(evaluationId);
         return NoContent();
     }
 
-    [HttpGet("/{evaluationId}")]
+    [HttpGet("{evaluationId:guid}")]
     public async Task<EvaluationResponseDto> GetById(Guid evaluationId)
     {
         var result = await _evaluationLogic.GetEvaluationById(evaluationId);
         return new EvaluationResponseDto(result);
     }
 
-    [HttpGet]
-    public async Task<EvaluationsResponseDto> GetAllByPlayerId([FromBody] GetEvaluationsByPlayerIdRequestDto request)
+    [HttpGet("by-player/{playerId:guid}")]
+    public async Task<EvaluationsResponseDto> GetAllByPlayerId(Guid playerId)
     {
-        var result = await _evaluationLogic.GetEvaluationsByPlayerId(request.PlayerId);
-        return new EvaluationsResponseDto(result);
-    }
-    
-    [HttpGet]
-    public async Task<EvaluationsResponseDto> GetAllByExcerciseId([FromBody] GetEvaluationsByExcerciseIdRequestDto request)
-    {
-        var result = await _evaluationLogic.GetEvaluationsByExcerciseId(request.ExcerciseId);
+        var result = await _evaluationLogic.GetEvaluationsByPlayerId(playerId);
         return new EvaluationsResponseDto(result);
     }
 
-    [HttpGet]
-    public async Task<CompareEvaluationsResponseDto> CompareEvaluations([FromBody] CompareEvaluationsRequestDto request)
+    [HttpGet("by-exercise/{excerciseId:guid}")]
+    public async Task<EvaluationsResponseDto> GetAllByExcerciseId(Guid excerciseId)
     {
-        var result = await _evaluationLogic.CompareEvaluations(request.EvaluationId1, request.EvaluationId2);
+        var result = await _evaluationLogic.GetEvaluationsByExcerciseId(excerciseId);
+        return new EvaluationsResponseDto(result);
+    }
+
+    [HttpGet("compare")]
+    public async Task<CompareEvaluationsResponseDto> CompareEvaluations([FromQuery] Guid evaluationId1, [FromQuery] Guid evaluationId2)
+    {
+        var result = await _evaluationLogic.CompareEvaluations(evaluationId1, evaluationId2);
         return new CompareEvaluationsResponseDto(result);
     }
 

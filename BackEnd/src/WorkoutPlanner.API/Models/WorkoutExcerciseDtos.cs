@@ -2,17 +2,6 @@ using WorkoutPlanner.Domain;
 
 namespace WorkoutPlanner.API.Models;
 
-public class CreateWorkoutExcerciseRequestDto
-{
-    public Guid WorkoutId { get; set; }
-    public Guid ExcerciseId { get; set; }
-    public int Reps { get; set; }
-    public int Sets { get; set; }
-    public Enums.LoadType LoadType { get; set; }
-    public int? Weight { get; set; }
-    public int? Percentage { get; set; }
-}
-
 public class UpdateWorkoutExcerciseRequestDto
 {
     public Guid WorkoutExcerciseId { get; set; }
@@ -24,16 +13,6 @@ public class UpdateWorkoutExcerciseRequestDto
     public Enums.LoadType LoadType { get; set; }
     public int? Weight { get; set; }
     public int? Percentage { get; set; }
-}
-
-public class DeleteWorkoutExcerciseRequestDto
-{
-    public Guid WorkoutExcerciseId { get; set; }
-}
-
-public class GetWorkoutExcerciseByIdRequestDto
-{
-    public Guid WorkoutExcerciseId { get; set; }
 }
 
 public class WorkoutExcerciseResponseDto

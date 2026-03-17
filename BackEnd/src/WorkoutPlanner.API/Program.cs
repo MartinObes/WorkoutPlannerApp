@@ -1,15 +1,52 @@
 using Microsoft.EntityFrameworkCore;
+using WorkoutPlanner.Application.Evaluations;
+using WorkoutPlanner.Application.Excercises;
+using WorkoutPlanner.Application.Interfaces.Repositories;
+using WorkoutPlanner.Application.Services.HasherService;
+using WorkoutPlanner.Application.Services.WourkoutProcessorService;
+using WorkoutPlanner.Application.Users;
+using WorkoutPlanner.Application.WorkoutExcercises;
+using WorkoutPlanner.Application.Workouts;
 using WorkoutPlanner.Infraestructure.Persistence;
+using WorkoutPlanner.Infraestructure.Repositories;
 using WorkoutPlanner.Infrastructure.Persistence.Seeders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+const string FrontendCorsPolicy = "FrontendCorsPolicy";
+
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendCorsPolicy, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IEvaluationLogic, EvaluationLogic>();
+builder.Services.AddScoped<IExcerciseLogic, ExcerciseLogic>();
+builder.Services.AddScoped<IUserLogic, UserLogic>();
+builder.Services.AddScoped<IWorkoutLogic, WorkoutLogic>();
+builder.Services.AddScoped<IWorkoutExcerciseLogic, WorkoutExcerciseLogic>();
+builder.Services.AddScoped<IWorkoutProcessorService, WorkoutProcessorService>();
+
+builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
+builder.Services.AddScoped<IExcerciseRepository, ExcerciseRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+builder.Services.AddScoped<IWorkoutExcerciseRepository, WorkoutExcerciseRepository>();
+
+builder.Services.AddScoped<IHasherService, HasherService>();
 
 var app = builder.Build();
 
@@ -30,29 +67,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseCors(FrontendCorsPolicy);
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

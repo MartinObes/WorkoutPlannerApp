@@ -11,14 +11,14 @@ public class EvaluationControllerTest
 {
     private Mock<IEvaluationLogic> _evaluationLogicMock = null!;
     private EvaluationController _controller = null!;
-    
+
     [TestInitialize]
     public void SetUp()
     {
         _evaluationLogicMock = new Mock<IEvaluationLogic>(MockBehavior.Strict);
         _controller = new EvaluationController(_evaluationLogicMock.Object);
     }
-    
+
     [TestMethod]
     public async Task Create_ReturnsCreatedEvaluation()
     {
@@ -42,23 +42,22 @@ public class EvaluationControllerTest
         result.Weight.Should().Be(weight);
         _evaluationLogicMock.Verify(logic => logic.CreateEvaluation(playerId, excerciseId, reps, weight), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task Delete_ReturnsNoContent()
     {
         // Arrange
         var evaluationId = Guid.NewGuid();
         _evaluationLogicMock.Setup(logic => logic.DeleteEvaluation(evaluationId)).Returns(Task.CompletedTask);
-        var request = new Models.DeleteEvaluationRequestDto { EvaluationId = evaluationId };
 
         // Act
-        var result = await _controller.Delete(request);
+        var result = await _controller.Delete(evaluationId);
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
         _evaluationLogicMock.Verify(logic => logic.DeleteEvaluation(evaluationId), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task GetById_ReturnsEvaluation()
     {
@@ -75,7 +74,7 @@ public class EvaluationControllerTest
         result.Id.Should().Be(evaluationId);
         _evaluationLogicMock.Verify(logic => logic.GetEvaluationById(evaluationId), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task GetAllByPlayerId_ReturnsEvaluations()
     {
@@ -87,10 +86,9 @@ public class EvaluationControllerTest
             new Domain.Evaluation { PlayerId = playerId }
         };
         _evaluationLogicMock.Setup(logic => logic.GetEvaluationsByPlayerId(playerId)).ReturnsAsync(evaluations);
-        var request = new Models.GetEvaluationsByPlayerIdRequestDto { PlayerId = playerId };
 
         // Act
-        var result = await _controller.GetAllByPlayerId(request);
+        var result = await _controller.GetAllByPlayerId(playerId);
 
         // Assert
         result.Should().NotBeNull();
@@ -99,7 +97,7 @@ public class EvaluationControllerTest
         result.Evaluations[1].PlayerId.Should().Be(playerId);
         _evaluationLogicMock.Verify(logic => logic.GetEvaluationsByPlayerId(playerId), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task GetAllByExcerciseId_ReturnsEvaluations()
     {
@@ -111,10 +109,9 @@ public class EvaluationControllerTest
             new Domain.Evaluation { ExcerciseId = excerciseId }
         };
         _evaluationLogicMock.Setup(logic => logic.GetEvaluationsByExcerciseId(excerciseId)).ReturnsAsync(evaluations);
-        var request = new Models.GetEvaluationsByExcerciseIdRequestDto { ExcerciseId = excerciseId };
 
         // Act
-        var result = await _controller.GetAllByExcerciseId(request);
+        var result = await _controller.GetAllByExcerciseId(excerciseId);
 
         // Assert
         result.Should().NotBeNull();
@@ -123,7 +120,7 @@ public class EvaluationControllerTest
         result.Evaluations[1].ExcerciseId.Should().Be(excerciseId);
         _evaluationLogicMock.Verify(logic => logic.GetEvaluationsByExcerciseId(excerciseId), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task CompareEvaluations_ReturnsComparisonResult()
     {
@@ -132,15 +129,14 @@ public class EvaluationControllerTest
         var evaluationId2 = Guid.NewGuid();
         var comparisonResult = 1; // Assume evaluationId1 is better than evaluationId2
         _evaluationLogicMock.Setup(logic => logic.CompareEvaluations(evaluationId1, evaluationId2)).ReturnsAsync(comparisonResult);
-        var request = new Models.CompareEvaluationsRequestDto { EvaluationId1 = evaluationId1, EvaluationId2 = evaluationId2 };
 
         // Act
-        var result = await _controller.CompareEvaluations(request);
+        var result = await _controller.CompareEvaluations(evaluationId1, evaluationId2);
 
         // Assert
         result.Should().NotBeNull();
         result.Difference.Should().Be(comparisonResult);
         _evaluationLogicMock.Verify(logic => logic.CompareEvaluations(evaluationId1, evaluationId2), Times.Once);
     }
-    
+
 }

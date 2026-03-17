@@ -10,27 +10,6 @@ public class CreateEvaluationRequestDto
     public int Weight { get; set; }
 }
 
-public class DeleteEvaluationRequestDto
-{
-    public Guid EvaluationId { get; set; }
-}
-
-public class GetEvaluationsByPlayerIdRequestDto
-{
-    public Guid PlayerId { get; set; }
-}
-
-public class GetEvaluationsByExcerciseIdRequestDto
-{
-    public Guid ExcerciseId { get; set; }
-}
-
-public class CompareEvaluationsRequestDto
-{
-    public Guid EvaluationId1 { get; set; }
-    public Guid EvaluationId2 { get; set; }
-}
-
 public class CompareEvaluationsResponseDto
 {
     public int Difference { get; set; }

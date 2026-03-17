@@ -22,18 +22,6 @@ export interface UpdateWorkoutRequest {
   coachId?: string;
 }
 
-export interface DeleteWorkoutRequest {
-  name: string;
-}
-
-export interface WorkoutExistsRequest {
-  name: string;
-}
-
-export interface GetWorkoutByNameRequest {
-  name: string;
-}
-
 export interface WorkoutResponse {
   id: string;
   name: string;

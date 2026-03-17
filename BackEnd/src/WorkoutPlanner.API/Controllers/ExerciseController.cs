@@ -25,15 +25,15 @@ public class ExerciseController(IExcerciseLogic excerciseLogic) : ControllerBase
         var result = await _excerciseLogic.CreateExcercise(request.Name);
         return new ExcerciseResponseDto(result);
     }
-    
+
     //DELETE/atributes/{id}
-    [HttpDelete("{excerciseId}")]
+    [HttpDelete("{excerciseName}")]
     public async Task<IActionResult> Delete(string excerciseName)
     {
-       await  _excerciseLogic.DeleteExcercise(excerciseName);
-       return NoContent();
+        await _excerciseLogic.DeleteExcercise(excerciseName);
+        return NoContent();
     }
-    
+
     //GET/atributes/{name}
     [HttpGet("{excerciseName}")]
     public async Task<ExcerciseResponseDto> GetByName(string excerciseName)

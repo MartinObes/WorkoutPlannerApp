@@ -12,14 +12,14 @@ public class WorkoutExcerciseControllerTest
 {
     private Mock<IWorkoutExcerciseLogic> _workoutExcerciseLogicMock = null!;
     private WorkoutExcerciseController _controller = null!;
-    
+
     [TestInitialize]
     public void Setup()
     {
         _workoutExcerciseLogicMock = new Mock<IWorkoutExcerciseLogic>(MockBehavior.Strict);
         _controller = new WorkoutExcerciseController(_workoutExcerciseLogicMock.Object);
     }
-    
+
     [TestMethod]
     public async Task GetAll_ReturnsWorkoutExcercisesResponseDto()
     {
@@ -42,10 +42,10 @@ public class WorkoutExcerciseControllerTest
             }
         };
         _workoutExcerciseLogicMock.Setup(logic => logic.getAllWorkoutExcercises()).ReturnsAsync(workoutExcercises);
-        
+
         // Act
         var result = await _controller.GetAll();
-        
+
         // Assert
         result.Should().NotBeNull();
         result.WorkoutExcercises.Should().HaveCount(2);
@@ -69,22 +69,22 @@ public class WorkoutExcerciseControllerTest
         result.WorkoutExcercises[1].Percentage.Should().Be(workoutExcercises[1].Percentage);
         _workoutExcerciseLogicMock.Verify(logic => logic.getAllWorkoutExcercises(), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task GetAll_ReturnsEmptyList_WhenNoWorkoutExcercises()
     {
         // Arrange
         _workoutExcerciseLogicMock.Setup(logic => logic.getAllWorkoutExcercises()).ReturnsAsync(new List<WorkoutExcercise>());
-        
+
         // Act
         var result = await _controller.GetAll();
-        
+
         // Assert
         result.Should().NotBeNull();
         result.WorkoutExcercises.Should().BeEmpty();
         _workoutExcerciseLogicMock.Verify(logic => logic.getAllWorkoutExcercises(), Times.Once);
     }
-    
+
     [TestMethod]
     public async Task GetById_ReturnsWorkoutExcerciseResponseDto()
     {
@@ -98,10 +98,9 @@ public class WorkoutExcerciseControllerTest
             Excercise = new Excercise { Name = "Deadlift" }
         };
         _workoutExcerciseLogicMock.Setup(logic => logic.getWorkoutExcerciseById(workoutExcerciseId)).ReturnsAsync(workoutExcercise);
-        var request = new GetWorkoutExcerciseByIdRequestDto { WorkoutExcerciseId = workoutExcerciseId };
 
         // Act
-        var result = await _controller.GetById(request);
+        var result = await _controller.GetById(workoutExcerciseId);
 
         // Assert
         result.Should().NotBeNull();
@@ -151,7 +150,7 @@ public class WorkoutExcerciseControllerTest
             .ReturnsAsync(updatedWorkoutExcercise);
 
         // Act
-        var result = await _controller.Update(request);
+        var result = await _controller.Update(workoutExcerciseId, request);
 
         // Assert
         result.Should().NotBeNull();
@@ -178,10 +177,9 @@ public class WorkoutExcerciseControllerTest
         _workoutExcerciseLogicMock
             .Setup(logic => logic.deleteWorkoutExcercise(workoutExcerciseId))
             .Returns(Task.CompletedTask);
-        var request = new DeleteWorkoutExcerciseRequestDto { WorkoutExcerciseId = workoutExcerciseId };
 
         // Act
-        var result = await _controller.Delete(request);
+        var result = await _controller.Delete(workoutExcerciseId);
 
         // Assert
         result.Should().BeOfType<Microsoft.AspNetCore.Mvc.NoContentResult>();
