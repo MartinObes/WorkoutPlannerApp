@@ -21,9 +21,10 @@ public class WorkoutExcerciseLogic(IWorkoutExcerciseRepository workoutExcerciseR
         return workoutExcercise;
     }
      
-    public WorkoutExcercise updateWorkoutExcercise(WorkoutExcercise workoutExcercise, string name, Guid workoutId,
+    public async Task<WorkoutExcercise> updateWorkoutExcercise(Guid workoutExcerciseId, string name, Guid workoutId,
         Guid excerciseId, int reps, int sets, Enums.LoadType loadType, int? weight = null, int? percentage = null)
     {
+        var workoutExcercise = await _workoutExcerciseRepository.GetAsync(we => we.Id == workoutExcerciseId);
         if (workoutExcercise == null) throw new ArgumentException("WorkoutExcercise cannot be null.");
 
         WorkoutExcercise.Validate(sets, reps, loadType, weight, percentage);
@@ -40,8 +41,9 @@ public class WorkoutExcerciseLogic(IWorkoutExcerciseRepository workoutExcerciseR
         return workoutExcercise;
     }
 
-    public void deleteWorkoutExcercise(WorkoutExcercise workoutExcercise)
+    public async Task deleteWorkoutExcercise(Guid workoutExcerciseid)
     {
+        var workoutExcercise = await _workoutExcerciseRepository.GetAsync(we => we.Id == workoutExcerciseid);
         if (workoutExcercise == null)
         {
             throw new ArgumentException("WorkoutExcercise cannot be null.");

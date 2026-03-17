@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WorkoutPlanner.Application.Interfaces.Repositories;
+using WorkoutPlanner.Application.Services.HasherService;
 using WorkoutPlanner.Domain;
 
 namespace WorkoutPlanner.Application.Users;
 
-public class UserLogic (IUserRepository userRepository) : IUserLogic
+public class UserLogic (IUserRepository userRepository, IHasherService hasherService) : IUserLogic
 {
     private readonly IUserRepository _userRepository = userRepository  ?? throw new ArgumentNullException(nameof(userRepository));
+    private readonly IHasherService _hasherService = hasherService ?? throw new ArgumentNullException(nameof(hasherService));
 
     private string _specialCharacters = "!@#$%^&*()_+[]{}|;:',.<>?/`~-=";
     
@@ -47,15 +49,16 @@ public class UserLogic (IUserRepository userRepository) : IUserLogic
             Name = $"{name.Trim()} {surname.Trim()}",
             Email = email,
             Role = role,
-            PasswordHash = password
+            PasswordHash = _hasherService.Hash(password)
         };
         
         await _userRepository.InsertAsync(user);
         return user;
     }
     
-    public User UpdateUser(User user, string? password, string? name, string? surname, string? email, Enums.UserRole? role)
+    public async Task<User> UpdateUser(string username, string? password, string? name, string? surname, string? email, Enums.UserRole? role)
     {
+        var user = await GetUserByName(username);
         if (user == null) throw new ArgumentException("User cannot be null.");
         
         if (!string.IsNullOrWhiteSpace(password))
@@ -88,8 +91,9 @@ public class UserLogic (IUserRepository userRepository) : IUserLogic
         return user;
     }
     
-    public void DeleteUser(User user)
+    public async Task DeleteUser(string username)
     {
+        var user = await GetUserByName(username);
         if (user == null)
         {
             throw new ArgumentNullException(nameof(user), "User cannot be null.");

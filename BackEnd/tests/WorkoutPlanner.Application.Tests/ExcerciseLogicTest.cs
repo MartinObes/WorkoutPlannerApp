@@ -1,11 +1,9 @@
 ﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Linq.Expressions;
 using WorkoutPlanner.Application.Excercises;
-using WorkoutPlanner.Application.Interfaces.Repositories;
 using WorkoutPlanner.Domain;
-using WorkoutPlanner.Infraestructure.Persistence;
 using WorkoutPlanner.Infraestructure.Persistence;
 using WorkoutPlanner.Infraestructure.Repositories;
 
@@ -73,31 +71,39 @@ public class ExcerciseLogicTest
     }
     
     [TestMethod]
-    public void DeleteExcercise_WhenValidExcercise_CallsRepositoryDelete()
+    public async Task DeleteExcercise_WhenValidExcercise_CallsRepositoryDelete()
     {
         // Arrange
         var excercise = new Excercise { Id = Guid.NewGuid(), Name = "Squat" };
+        _excerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Excercise, bool>>>(), null))
+            .ReturnsAsync(excercise);
         _excerciseRepositoryMock.Setup(repo => repo.Delete(excercise)).Verifiable();
         
         // Act
-        _excerciseLogic.DeleteExcercise(excercise);
+        await _excerciseLogic.DeleteExcercise(excercise.Name);
         
         // Assert
+        _excerciseRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Excercise, bool>>>(), null), Times.Once);
         _excerciseRepositoryMock.Verify(repo => repo.Delete(excercise), Times.Once);
     }
 
     [TestMethod]
-    public void DeleteExcercise_WhenNullExcercise_ThrowsArgumentNullException()
+    public void DeleteExcercise_WhenExcerciseDoesNotExist_ThrowsArgumentNullException()
     {
         // Arrange
-        var excercise = (Excercise)null!;
-        _excerciseRepositoryMock.Setup(repo => repo.Delete(excercise)).Verifiable();
+        string name = "Squat";
+        _excerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<Excercise, bool>>>(), null))
+            .ReturnsAsync((Excercise)null!);
         
         // Act
-        Action act = () => _excerciseLogic.DeleteExcercise(excercise);
+        Action act = () => _excerciseLogic.DeleteExcercise(name).GetAwaiter().GetResult();
         
         // Assert
-        act.Should().Throw<ArgumentNullException>().WithMessage("Excercise cannot be null.*");
+        act.Should().Throw<ArgumentNullException>().WithMessage("Excercise cannot be null. (Parameter 'excercise')");
+        _excerciseRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<Excercise, bool>>>(), null), Times.Once);
+        _excerciseRepositoryMock.Verify(repo => repo.Delete(It.IsAny<Excercise>()), Times.Never);
     }
     
     [TestMethod]

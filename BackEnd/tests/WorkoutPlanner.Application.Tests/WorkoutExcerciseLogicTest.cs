@@ -125,10 +125,10 @@ public class WorkoutExcerciseLogicTest
     }
     
     [TestMethod]
-    public void UpdateWorkoutExcercise_ValidInput_ReturnsUpdatedWorkoutExcercise()
+    public async Task UpdateWorkoutExcercise_ValidInput_ReturnsUpdatedWorkoutExcercise()
     {
         // Arrange
-        var workoutExcercise = new WorkoutExcercise(3, 10, Enums.LoadType.Weight, 100);
+        var workoutExcercise = new WorkoutExcercise(3, 10, Enums.LoadType.Weight, 100) { Id = Guid.NewGuid() };
         var name = "Bench Press";
         var workoutId = Guid.NewGuid();
         var excerciseId = Guid.NewGuid();
@@ -137,11 +137,14 @@ public class WorkoutExcerciseLogicTest
         var loadType = Enums.LoadType.Weight;
         var weight = 110;
         _workoutExcerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null))
+            .ReturnsAsync(workoutExcercise);
+        _workoutExcerciseRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<WorkoutExcercise>()))
             .Verifiable();
 
         // Act
-        var result = _workoutExcerciseLogic.updateWorkoutExcercise(workoutExcercise, name, workoutId, excerciseId, reps, sets, loadType, weight);
+        var result = await _workoutExcerciseLogic.updateWorkoutExcercise(workoutExcercise.Id, name, workoutId, excerciseId, reps, sets, loadType, weight);
 
         // Assert
         result.Should().NotBeNull();
@@ -163,10 +166,10 @@ public class WorkoutExcerciseLogicTest
     }
     
     [TestMethod]
-    public void UpdateWorkoutExcercise_NullWorkoutExcercise_ThrowsArgumentException()
+    public void UpdateWorkoutExcercise_WhenWorkoutExcerciseDoesNotExist_ThrowsArgumentException()
     {
         // Arrange
-        WorkoutExcercise? workoutExcercise = null;
+        var workoutExcerciseId = Guid.NewGuid();
         var name = "Bench Press";
         var workoutId = Guid.NewGuid();
         var excerciseId = Guid.NewGuid();
@@ -175,14 +178,18 @@ public class WorkoutExcerciseLogicTest
         var loadType = Enums.LoadType.Weight;
         var weight = 110;
         _workoutExcerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null))
+            .ReturnsAsync((WorkoutExcercise)null!);
+        _workoutExcerciseRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<WorkoutExcercise>()))
             .Verifiable();
 
         // Act
-        Action act = () => _workoutExcerciseLogic.updateWorkoutExcercise(workoutExcercise!, name, workoutId, excerciseId, reps, sets, loadType, weight);
+        Action act = () => _workoutExcerciseLogic.updateWorkoutExcercise(workoutExcerciseId, name, workoutId, excerciseId, reps, sets, loadType, weight).GetAwaiter().GetResult();
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("WorkoutExcercise cannot be null.");
+        _workoutExcerciseRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null), Times.Once);
         _workoutExcerciseRepositoryMock.Verify(repo => repo.Update(It.IsAny<WorkoutExcercise>()), Times.Never);
     }
     
@@ -190,7 +197,7 @@ public class WorkoutExcerciseLogicTest
     public void UpdateWorkoutExcercise_InvalidInput_ThrowsArgumentException()
     {
         // Arrange
-        var workoutExcercise = new WorkoutExcercise(3, 10, Enums.LoadType.Weight, 100);
+        var workoutExcercise = new WorkoutExcercise(3, 10, Enums.LoadType.Weight, 100) { Id = Guid.NewGuid() };
         var name = "Bench Press";
         var workoutId = Guid.NewGuid();
         var excerciseId = Guid.NewGuid();
@@ -198,51 +205,64 @@ public class WorkoutExcerciseLogicTest
         var sets = 4;
         var loadType = (Enums.LoadType)999; // Invalid load type
         _workoutExcerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null))
+            .ReturnsAsync(workoutExcercise);
+        _workoutExcerciseRepositoryMock
             .Setup(repo => repo.Update(It.IsAny<WorkoutExcercise>()))
             .Verifiable();
 
         // Act
-        Action act = () => _workoutExcerciseLogic.updateWorkoutExcercise(workoutExcercise, name, workoutId, excerciseId, reps, sets, loadType);
+        Action act = () => _workoutExcerciseLogic.updateWorkoutExcercise(workoutExcercise.Id, name, workoutId, excerciseId, reps, sets, loadType).GetAwaiter().GetResult();
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("Invalid load type.");
+        _workoutExcerciseRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null), Times.Once);
         _workoutExcerciseRepositoryMock.Verify(repo => repo.Update(It.IsAny<WorkoutExcercise>()), Times.Never);
     }
 
     [TestMethod]
-    public void DeleteWorkoutExcercise_WhenValidWorkoutExcercise_CallsRepositoryDelete()
+    public async Task DeleteWorkoutExcercise_WhenValidWorkoutExcercise_CallsRepositoryDelete()
     {
         // Arrange
         var workoutExcercise = new WorkoutExcercise(3, 10, Enums.LoadType.Weight, 100)
         {
+            Id = Guid.NewGuid(),
             WorkoutId = Guid.NewGuid(),
             ExcerciseId = Guid.NewGuid()
         };
+        _workoutExcerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null))
+            .ReturnsAsync(workoutExcercise);
         _workoutExcerciseRepositoryMock
             .Setup(repo => repo.Delete(workoutExcercise))
             .Verifiable();
 
         // Act
-        _workoutExcerciseLogic.deleteWorkoutExcercise(workoutExcercise);
+        await _workoutExcerciseLogic.deleteWorkoutExcercise(workoutExcercise.Id);
 
         // Assert
+        _workoutExcerciseRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null), Times.Once);
         _workoutExcerciseRepositoryMock.Verify(repo => repo.Delete(workoutExcercise), Times.Once);
     }
 
     [TestMethod]
-    public void DeleteWorkoutExcercise_WhenNullWorkoutExcercise_ThrowsArgumentException()
+    public void DeleteWorkoutExcercise_WhenWorkoutExcerciseDoesNotExist_ThrowsArgumentException()
     {
         // Arrange
-        WorkoutExcercise workoutExcercise = null!;
+        var workoutExcerciseId = Guid.NewGuid();
+        _workoutExcerciseRepositoryMock
+            .Setup(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null))
+            .ReturnsAsync((WorkoutExcercise)null!);
         _workoutExcerciseRepositoryMock
             .Setup(repo => repo.Delete(It.IsAny<WorkoutExcercise>()))
             .Verifiable();
 
         // Act
-        Action act = () => _workoutExcerciseLogic.deleteWorkoutExcercise(workoutExcercise);
+        Action act = () => _workoutExcerciseLogic.deleteWorkoutExcercise(workoutExcerciseId).GetAwaiter().GetResult();
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("WorkoutExcercise cannot be null.");
+        _workoutExcerciseRepositoryMock.Verify(repo => repo.GetAsync(It.IsAny<Expression<Func<WorkoutExcercise, bool>>>(), null), Times.Once);
         _workoutExcerciseRepositoryMock.Verify(repo => repo.Delete(It.IsAny<WorkoutExcercise>()), Times.Never);
     }
 
