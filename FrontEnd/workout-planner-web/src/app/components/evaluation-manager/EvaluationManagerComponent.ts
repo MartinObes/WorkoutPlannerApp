@@ -33,8 +33,9 @@ export class EvaluationManager implements OnInit {
 
   ngOnInit(): void {
     this.userId =
-      this.route.snapshot.paramMap.get('userId') ??
       this.route.parent?.snapshot.paramMap.get('userId') ??
+      this.route.snapshot.paramMap.get('userId') ??
+      localStorage.getItem('currentUserId') ??
       '';
 
     this.loadExercises();
