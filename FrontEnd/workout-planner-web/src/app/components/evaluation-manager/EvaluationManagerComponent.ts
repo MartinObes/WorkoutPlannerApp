@@ -21,6 +21,9 @@ export class EvaluationManager implements OnInit {
   selectedExerciseId = '';
   exerciseSearchTerm = '';
   showExerciseDropdown = false;
+  showDeleteModal = false;
+  pendingDeleteEvaluationId: string | null = null;
+  isDeleting = false;
   loading = false;
   error: string | null = null;
 
@@ -136,5 +139,42 @@ export class EvaluationManager implements OnInit {
 
   getExerciseName(exerciseId: string): string {
     return this.exercises.find((e) => e.id === exerciseId)?.name ?? 'Unknown exercise';
+  }
+
+  openDeleteModal(evaluationId: string): void {
+    this.pendingDeleteEvaluationId = evaluationId;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    if (this.isDeleting) {
+      return;
+    }
+
+    this.showDeleteModal = false;
+    this.pendingDeleteEvaluationId = null;
+  }
+
+  confirmDeleteEvaluation(): void {
+    if (!this.pendingDeleteEvaluationId || this.isDeleting) {
+      return;
+    }
+
+    const evaluationId = this.pendingDeleteEvaluationId;
+    this.isDeleting = true;
+
+    this.evaluationService.delete(evaluationId).subscribe({
+      next: () => {
+        this.allEvaluations = this.allEvaluations.filter((e) => e.id !== evaluationId);
+        this.applyFilter();
+        this.isDeleting = false;
+        this.showDeleteModal = false;
+        this.pendingDeleteEvaluationId = null;
+      },
+      error: () => {
+        this.error = 'Could not delete evaluation.';
+        this.isDeleting = false;
+      },
+    });
   }
 }
