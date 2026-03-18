@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EvaluationResponse } from '../../models/evaluation.models';
 import { EvaluationService } from '../../services/evaluation.service';
@@ -114,6 +114,14 @@ export class EvaluationManager implements OnInit {
     setTimeout(() => {
       this.showExerciseDropdown = false;
     }, 100);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.exercise-dropdown-container')) {
+      this.showExerciseDropdown = false;
+    }
   }
 
   goToCreateEvaluation(): void {
