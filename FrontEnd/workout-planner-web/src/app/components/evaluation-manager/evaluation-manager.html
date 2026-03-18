@@ -14,27 +14,46 @@
 
   <div class="rounded-lg border border-slate-700 bg-slate-900 p-4">
     <label class="block text-sm font-medium text-slate-200">
-      Search Exercise
-      <input
-        type="text"
-        [(ngModel)]="exerciseSearchTerm"
-        placeholder="Type exercise name..."
-        class="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
-      />
-    </label>
-
-    <label class="mt-4 block text-sm font-medium text-slate-200">
       Filter by Exercise
-      <select
-        [(ngModel)]="selectedExerciseId"
-        (change)="onExerciseFilterChange()"
-        class="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
-      >
-        <option value="">All Exercises</option>
-        @for (exercise of visibleExercises; track exercise.id) {
-          <option [value]="exercise.id">{{ exercise.name }}</option>
+      <div class="relative mt-2">
+        <input
+          type="text"
+          [value]="exerciseSearchTerm"
+          (input)="onExerciseSearch($any($event.target).value)"
+          (focus)="showExerciseDropdown = true"
+          (blur)="hideExerciseDropdown()"
+          placeholder="Search and select exercise..."
+          class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+        />
+
+        @if (showExerciseDropdown) {
+          <div
+            class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-600 bg-slate-800 shadow-lg"
+          >
+            <button
+              type="button"
+              (mousedown)="selectAllExercises(); $event.preventDefault()"
+              class="block w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
+            >
+              All Exercises
+            </button>
+
+            @if (filteredExercises.length === 0) {
+              <div class="px-3 py-2 text-sm text-slate-400">No exercises found.</div>
+            } @else {
+              @for (exercise of filteredExercises; track exercise.id) {
+                <button
+                  type="button"
+                  (mousedown)="selectExercise(exercise); $event.preventDefault()"
+                  class="block w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
+                >
+                  {{ exercise.name }}
+                </button>
+              }
+            }
+          </div>
         }
-      </select>
+      </div>
     </label>
   </div>
 
@@ -68,8 +87,8 @@
               </p>
             </div>
             <div class="text-right">
-              <p class="text-xs text-slate-500">Exercise ID</p>
-              <p class="text-sm text-slate-300">{{ evaluation.excerciseId }}</p>
+              <p class="text-xs text-slate-500">Exercise Name</p>
+              <p class="text-sm text-slate-300">{{ getExerciseName(evaluation.excerciseId) }}</p>
             </div>
           </div>
         </div>

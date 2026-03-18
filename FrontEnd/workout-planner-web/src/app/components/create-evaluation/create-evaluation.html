@@ -1,0 +1,120 @@
+<div class="mx-auto max-w-2xl space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-white">Create Evaluation</h1>
+      <p class="mt-2 text-sm text-slate-300">Add a new workout performance entry.</p>
+    </div>
+    <a
+      [routerLink]="['../']"
+      class="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+    >
+      Back
+    </a>
+  </div>
+  @if (errorMessage) {
+    <div class="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">
+      {{ errorMessage }}
+      @if (invalidFields.length > 0) {
+        <div class="mt-1 text-xs">Invalid: {{ invalidFields.join(', ') }}</div>
+      }
+    </div>
+  }
+
+  <form
+    [formGroup]="form"
+    (ngSubmit)="onSubmit()"
+    class="space-y-4 rounded-lg border border-slate-700 bg-slate-900 p-4"
+  >
+    <label class="block text-sm font-medium text-slate-200">
+      Exercise
+      <div class="relative mt-2">
+        <input
+          type="text"
+          [value]="exerciseSearchTerm"
+          (input)="onExerciseSearch($any($event.target).value)"
+          (focus)="showExerciseDropdown = true"
+          (blur)="hideExerciseDropdown()"
+          [placeholder]="
+            isExercisesLoading ? 'Loading exercises...' : 'Search and select exercise...'
+          "
+          class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+        />
+
+        <input type="hidden" formControlName="excerciseId" />
+
+        @if (showExerciseDropdown && !isExercisesLoading) {
+          <div
+            class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-600 bg-slate-800 shadow-lg"
+          >
+            @if (filteredExercises.length === 0) {
+              <div class="px-3 py-2 text-sm text-slate-400">No exercises found.</div>
+            } @else {
+              @for (exercise of filteredExercises; track exercise.id) {
+                <button
+                  type="button"
+                  (mousedown)="selectExercise(exercise); $event.preventDefault()"
+                  class="block w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
+                >
+                  {{ exercise.name }}
+                </button>
+              }
+            }
+          </div>
+        }
+      </div>
+
+      @if (form.controls.excerciseId.touched && form.controls.excerciseId.invalid) {
+        <p class="mt-1 text-xs text-rose-400">Exercise is required.</p>
+      }
+    </label>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <label class="block text-sm font-medium text-slate-200">
+        Reps
+        <input
+          type="number"
+          formControlName="reps"
+          min="1"
+          (focus)="$any($event.target).select()"
+          class="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+        />
+        @if (form.controls.reps.touched && form.controls.reps.invalid) {
+          <p class="mt-1 text-xs text-rose-400">Reps must be at least 1.</p>
+        }
+      </label>
+
+      <label class="block text-sm font-medium text-slate-200">
+        Weight (kg)
+        <input
+          type="number"
+          formControlName="weight"
+          min="0"
+          step="0.1"
+          (focus)="$any($event.target).select()"
+          class="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+        />
+        @if (form.controls.weight.touched && form.controls.weight.invalid) {
+          <p class="mt-1 text-xs text-rose-400">Weight cannot be negative.</p>
+        }
+      </label>
+    </div>
+
+    <div class="flex items-center gap-3 pt-2">
+      <button
+        type="submit"
+        [disabled]="isSubmitting"
+        class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {{ isSubmitting ? 'Saving...' : 'Save Evaluation' }}
+      </button>
+
+      <a
+        [routerLink]="['../']"
+        class="rounded-lg border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+      >
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+````

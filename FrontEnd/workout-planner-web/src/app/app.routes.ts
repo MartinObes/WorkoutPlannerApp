@@ -32,6 +32,13 @@ export const routes: Routes = [
             (m) => m.EvaluationManager,
           ),
       },
+      {
+        path: 'evaluations/create',
+        loadComponent: () =>
+          import('./components/create-evaluation/CreateEvaluationComponent').then(
+            (m) => m.CreateEvaluationComponent,
+          ),
+      },
     ],
   },
   {
