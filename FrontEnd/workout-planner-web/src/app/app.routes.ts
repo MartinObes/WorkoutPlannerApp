@@ -19,6 +19,20 @@ export const routes: Routes = [
     path: 'app/:userId',
     loadComponent: () =>
       import('./components/app-shell/app-shell.page').then((m) => m.AppShellPage),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'evaluations',
+      },
+      {
+        path: 'evaluations',
+        loadComponent: () =>
+          import('./components/evaluation-manager/EvaluationManagerComponent').then(
+            (m) => m.EvaluationManager,
+          ),
+      },
+    ],
   },
   {
     path: '**',

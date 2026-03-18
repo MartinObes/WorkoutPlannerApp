@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { SideNavComponent } from '../sideNav/SideNavComponent';
 
 @Component({
   selector: 'app-app-shell-page',
   standalone: true,
-  imports: [SideNavComponent],
+  imports: [SideNavComponent, RouterOutlet],
   templateUrl: './app-shell.page.html',
 })
 export class AppShellPage {
