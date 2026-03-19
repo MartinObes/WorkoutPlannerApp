@@ -20,6 +20,9 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
             CoachId = coachId
         };
 
+        await _workoutRepository.InsertAsync(workout);
+        await _workoutRepository.SaveAsync();
+
         foreach (var wEArgs in workoutExcerciseArgsList)
         {
             var workoutExcercise = await _workoutExcerciseLogic.createWorkoutExcercise(workout.Id, wEArgs.ExcerciseId, wEArgs.Reps,
@@ -27,7 +30,7 @@ public class WorkoutLogic(IWorkoutRepository workoutRepository, IWorkoutExcercis
             workout.WorkoutExcercises.Add(workoutExcercise);
         }
 
-        await _workoutRepository.InsertAsync(workout);
+        _workoutRepository.Update(workout);
         await _workoutRepository.SaveAsync();
         return workout;
     }

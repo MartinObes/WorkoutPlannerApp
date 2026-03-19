@@ -1,57 +1,87 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EvaluationResponse } from '../../models/evaluation.models';
 import { EvaluationService } from '../../services/evaluation.service';
 import { ExerciseResponse } from '../../models/exercise.models';
 import { ExerciseService } from '../../services/exercise.service';
+import { SessionData, SessionService } from '../../services/session.service';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ExerciseSearchSelectComponent } from '../shared/exercise-search-select/exercise-search-select.component';
 
 @Component({
   selector: 'app-evaluation-manager',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ExerciseSearchSelectComponent],
   templateUrl: './evaluation-manager.html',
 })
-export class EvaluationManager implements OnInit {
+export class EvaluationManager implements OnInit, OnDestroy {
   userId = '';
   allEvaluations: EvaluationResponse[] = [];
   filteredEvaluations: EvaluationResponse[] = [];
   exercises: ExerciseResponse[] = [];
   selectedExerciseId = '';
-  exerciseSearchTerm = '';
-  showExerciseDropdown = false;
   showDeleteModal = false;
   pendingDeleteEvaluationId: string | null = null;
   isDeleting = false;
   loading = false;
   error: string | null = null;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly exerciseService: ExerciseService,
     private readonly evaluationService: EvaluationService,
+    private readonly sessionService: SessionService,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    this.userId =
-      this.route.parent?.snapshot.paramMap.get('userId') ??
-      this.route.snapshot.paramMap.get('userId') ??
-      localStorage.getItem('currentUserId') ??
-      '';
-
     this.loadExercises();
-    this.loadEvaluations();
+
+    this.sessionService.sessionChanges$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((session: SessionData | null) => {
+        const nextUserId = session?.userId ?? '';
+
+        if (!nextUserId) {
+          this.userId = '';
+          this.allEvaluations = [];
+          this.filteredEvaluations = [];
+          this.loading = false;
+          this.error = 'User session not found.';
+          this.cdr.detectChanges();
+          return;
+        }
+
+        if (this.userId === nextUserId && this.allEvaluations.length > 0) {
+          return;
+        }
+
+        this.userId = nextUserId;
+        this.error = null;
+        this.cdr.detectChanges();
+        this.loadEvaluations();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadExercises(): void {
     this.exerciseService.getAll().subscribe({
       next: (response: any) => {
         this.exercises = response.excercises ?? response.exercises ?? [];
+        this.cdr.detectChanges();
       },
       error: () => {
         console.error('Could not load exercises.');
+        this.cdr.detectChanges();
       },
     });
   }
@@ -59,22 +89,26 @@ export class EvaluationManager implements OnInit {
   loadEvaluations(): void {
     if (!this.userId) {
       this.loading = false;
-      this.error = 'Missing user id in route.';
+      this.error = 'User session not found.';
+      this.cdr.detectChanges();
       return;
     }
 
     this.loading = true;
     this.error = null;
+    this.cdr.detectChanges();
 
     this.evaluationService.getByPlayerId(this.userId).subscribe({
       next: (response) => {
-        this.allEvaluations = response.evaluations;
+        this.allEvaluations = response.evaluations ?? [];
         this.applyFilter();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Could not load evaluations.';
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -89,52 +123,27 @@ export class EvaluationManager implements OnInit {
     }
   }
 
-  onExerciseSearch(value: string): void {
-    this.exerciseSearchTerm = value;
-    this.showExerciseDropdown = true;
-
-    if (!value.trim()) {
+  onExerciseSelectionChange(exercise: ExerciseResponse | null): void {
+    if (!exercise) {
       this.selectedExerciseId = '';
       this.applyFilter();
+      return;
     }
-  }
 
-  selectExercise(exercise: ExerciseResponse): void {
     this.selectedExerciseId = exercise.id;
-    this.exerciseSearchTerm = exercise.name;
-    this.showExerciseDropdown = false;
     this.applyFilter();
-  }
-
-  selectAllExercises(): void {
-    this.selectedExerciseId = '';
-    this.exerciseSearchTerm = '';
-    this.showExerciseDropdown = false;
-    this.applyFilter();
-  }
-
-  hideExerciseDropdown(): void {
-    setTimeout(() => {
-      this.showExerciseDropdown = false;
-    }, 100);
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest('.exercise-dropdown-container')) {
-      this.showExerciseDropdown = false;
-    }
   }
 
   goToCreateEvaluation(): void {
     this.router.navigate(['create'], { relativeTo: this.route });
   }
 
-  get filteredExercises(): ExerciseResponse[] {
-    const term = this.exerciseSearchTerm.trim().toLowerCase();
-    if (!term) return this.exercises;
-    return this.exercises.filter((e) => e.name.toLowerCase().includes(term));
+  get selectedExerciseName(): string {
+    if (!this.selectedExerciseId) {
+      return '';
+    }
+
+    return this.exercises.find((exercise) => exercise.id === this.selectedExerciseId)?.name ?? '';
   }
 
   getExerciseName(exerciseId: string): string {

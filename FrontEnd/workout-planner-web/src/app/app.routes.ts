@@ -16,7 +16,7 @@ export const routes: Routes = [
       import('./components/create-user/create-user.page').then((m) => m.CreateUserPage),
   },
   {
-    path: 'app/:userId',
+    path: 'app',
     loadComponent: () =>
       import('./components/app-shell/app-shell.page').then((m) => m.AppShellPage),
     children: [
@@ -37,6 +37,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./components/create-evaluation/CreateEvaluationComponent').then(
             (m) => m.CreateEvaluationComponent,
+          ),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./components/user-settings/userSettingsComponent').then(
+            (m) => m.UserSettingsComponent,
+          ),
+      },
+      {
+        path: 'workouts',
+        loadComponent: () =>
+          import('./components/workout-manager/workoutManagerComponent').then(
+            (m) => m.WorkoutManagerComponent,
+          ),
+      },
+      {
+        path: 'workouts/create',
+        loadComponent: () =>
+          import('./components/create-workout/createWorkoutComponent').then(
+            (m) => m.CreateWorkoutComponent,
           ),
       },
     ],

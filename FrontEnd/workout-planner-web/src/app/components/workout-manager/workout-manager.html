@@ -1,0 +1,55 @@
+<div class="min-h-screen bg-slate-900 p-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-white">Your Workouts</h1>
+      <button
+        (click)="goToCreateWorkout()"
+        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors duration-200"
+      >
+        Create Workout
+      </button>
+    </div>
+    @if (loading) {
+      <div class="flex items-center justify-center py-12">
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"
+        ></div>
+      </div>
+    }
+    @if (error && !loading) {
+      <div class="bg-rose-900 border border-rose-700 rounded-lg p-4 text-rose-100">
+        <p class="font-semibold">Error</p>
+        <p>{{ error }}</p>
+      </div>
+    }
+    @if (!loading && workouts.length === 0 && !error) {
+      <div class="text-center py-12">
+        <p class="text-gray-400 text-lg mb-4">No workouts yet.</p>
+        <button
+          (click)="goToCreateWorkout()"
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors duration-200"
+        >
+          Create Your First Workout
+        </button>
+      </div>
+    }
+
+    @if (!loading && workouts.length > 0 && !error) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (workout of workouts; track workout.id) {
+          <div
+            class="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center justify-between hover:border-slate-600 transition-colors duration-200"
+          >
+            <h2 class="text-lg font-semibold text-white flex-1">{{ workout.name }}</h2>
+            <button
+              (click)="accessWorkout(workout)"
+              class="ml-4 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg transition-colors duration-200 whitespace-nowrap"
+            >
+              Access
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

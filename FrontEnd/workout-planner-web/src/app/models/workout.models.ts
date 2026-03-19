@@ -14,6 +14,7 @@ export interface CreateWorkoutRequest {
   name: string;
   coachId?: string;
   workoutExcercises: CreateWorkoutExerciseArgRequest[];
+  workoutExcerciseArgsList?: CreateWorkoutExerciseArgRequest[];
 }
 
 export interface UpdateWorkoutRequest {

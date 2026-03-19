@@ -1,0 +1,145 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-white">User Settings</h1>
+      <p class="mt-2 text-sm text-slate-300">View your account details and manage your role.</p>
+    </div>
+  </div>
+
+  @if (error) {
+    <div class="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">
+      {{ error }}
+    </div>
+  }
+
+  @if (!user) {
+    <div class="rounded-lg border border-slate-700 bg-slate-900 p-8 text-center">
+      <p class="text-slate-300">Loading user data...</p>
+    </div>
+  } @else {
+    <div class="rounded-lg border border-slate-700 bg-slate-900 p-5">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-400">Name</p>
+          <p class="mt-1 text-base font-semibold text-white">{{ user.name }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-400">Email</p>
+          <p class="mt-1 text-base font-semibold text-white">{{ user.email }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-400">Role</p>
+          <p class="mt-1 text-base font-semibold text-white">{{ getRoleLabel(user.role) }}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-400">User ID</p>
+          <p class="mt-1 break-all text-sm font-medium text-slate-300">{{ user.id }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button
+          type="button"
+          (click)="openEditForm()"
+          class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+        >
+          Edit Role
+        </button>
+
+        <button
+          type="button"
+          (click)="openDeleteModal()"
+          class="rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+        >
+          Delete User
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+@if (showEditForm && user) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (click)="closeEditForm()"
+  >
+    <div
+      class="w-full max-w-md rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="edit-modal-title" class="text-lg font-semibold text-white">Edit role</h2>
+      <p class="mt-2 text-sm text-slate-300">Select a role and confirm to update your account.</p>
+
+      <div class="mt-4">
+        <label for="role-select" class="block text-sm font-medium text-slate-200">Role</label>
+        <select
+          id="role-select"
+          [value]="user.role"
+          (change)="onRoleChanged($any($event.target).value)"
+          class="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+        >
+          @for (roleOption of userRoles; track roleOption.value) {
+            <option [value]="roleOption.value">{{ roleOption.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="closeEditForm()"
+          class="rounded-lg border border-slate-600 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmEdit()"
+          class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
+        >
+          Save Role
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteModal) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (click)="closeDeleteModal()"
+  >
+    <div
+      class="w-full max-w-md rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 id="delete-modal-title" class="text-lg font-semibold text-white">Delete user?</h2>
+      <p class="mt-2 text-sm text-slate-300">
+        This action cannot be undone. Your account will be permanently removed.
+      </p>
+
+      <div class="mt-5 flex justify-end gap-2">
+        <button
+          type="button"
+          (click)="closeDeleteModal()"
+          class="rounded-lg border border-slate-600 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          class="rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-500"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}

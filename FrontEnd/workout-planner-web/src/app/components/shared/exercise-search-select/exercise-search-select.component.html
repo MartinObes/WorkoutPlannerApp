@@ -1,0 +1,41 @@
+<div class="exercise-dropdown-container relative">
+  <input
+    type="text"
+    [value]="searchTerm"
+    (input)="onSearchInput($any($event.target).value)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    [placeholder]="loading ? 'Loading exercises...' : placeholder"
+    class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+  />
+
+  @if (showDropdown && !loading) {
+    <div
+      class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-600 bg-slate-800 shadow-lg"
+    >
+      @if (showAllOption) {
+        <button
+          type="button"
+          (mousedown)="selectAll(); $event.preventDefault()"
+          class="block w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
+        >
+          {{ allOptionLabel }}
+        </button>
+      }
+
+      @if (filteredExercises.length === 0) {
+        <div class="px-3 py-2 text-sm text-slate-400">No exercises found.</div>
+      } @else {
+        @for (exercise of filteredExercises; track exercise.id) {
+          <button
+            type="button"
+            (mousedown)="selectExercise(exercise); $event.preventDefault()"
+            class="block w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
+          >
+            {{ exercise.name }}
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

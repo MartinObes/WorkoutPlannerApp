@@ -4,11 +4,12 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { EvaluationService } from '../../services/evaluation.service';
 import { ExerciseService } from '../../services/exercise.service';
 import { ExerciseResponse } from '../../models/exercise.models';
+import { ExerciseSearchSelectComponent } from '../shared/exercise-search-select/exercise-search-select.component';
 
 @Component({
   selector: 'app-create-evaluation',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule],
+  imports: [ReactiveFormsModule, RouterModule, ExerciseSearchSelectComponent],
   templateUrl: './create-evaluation.html',
 })
 export class CreateEvaluationComponent {
@@ -17,13 +18,13 @@ export class CreateEvaluationComponent {
   private readonly exerciseService = inject(ExerciseService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
   userId = '';
   isSubmitting = false;
   errorMessage = '';
   invalidFields: string[] = [];
   excercises: ExerciseResponse[] = [];
-  exerciseSearchTerm = '';
-  showExerciseDropdown = false;
+  selectedExerciseName = '';
   isExercisesLoading = false;
 
   readonly form = this.fb.nonNullable.group({
@@ -91,6 +92,7 @@ export class CreateEvaluationComponent {
 
   loadExercises(): void {
     this.isExercisesLoading = true;
+
     this.exerciseService.getAll().subscribe({
       next: (response: any) => {
         this.excercises = response.excercises ?? response.exercises ?? [];
@@ -103,30 +105,31 @@ export class CreateEvaluationComponent {
     });
   }
 
-  get filteredExercises(): ExerciseResponse[] {
-    const term = this.exerciseSearchTerm.trim().toLowerCase();
-    if (!term) return this.excercises;
-    return this.excercises.filter((e) => e.name.toLowerCase().includes(term));
-  }
-
-  onExerciseSearch(value: string): void {
-    this.exerciseSearchTerm = value;
-    this.showExerciseDropdown = true;
-    if (!value.trim()) {
+  onExerciseSelectionChange(exercise: ExerciseResponse | null): void {
+    if (!exercise) {
+      this.selectedExerciseName = '';
       this.form.controls.excerciseId.setValue('');
+      return;
     }
-  }
 
-  selectExercise(exercise: ExerciseResponse): void {
+    this.selectedExerciseName = exercise.name;
     this.form.controls.excerciseId.setValue(exercise.id);
     this.form.controls.excerciseId.markAsTouched();
-    this.exerciseSearchTerm = exercise.name;
-    this.showExerciseDropdown = false;
   }
 
-  hideExerciseDropdown(): void {
-    setTimeout(() => {
-      this.showExerciseDropdown = false;
-    }, 100);
+  get exercisePlaceholder(): string {
+    if (this.isExercisesLoading) {
+      return 'Loading exercises...';
+    }
+
+    return 'Search and select exercise...';
+  }
+
+  get selectedExerciseId(): string {
+    return this.form.controls.excerciseId.value;
+  }
+
+  set selectedExerciseId(value: string) {
+    this.form.controls.excerciseId.setValue(value);
   }
 }

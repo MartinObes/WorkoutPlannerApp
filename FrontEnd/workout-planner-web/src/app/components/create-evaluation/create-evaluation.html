@@ -27,41 +27,18 @@
   >
     <label class="block text-sm font-medium text-slate-200">
       Exercise
-      <div class="relative mt-2">
-        <input
-          type="text"
-          [value]="exerciseSearchTerm"
-          (input)="onExerciseSearch($any($event.target).value)"
-          (focus)="showExerciseDropdown = true"
-          (blur)="hideExerciseDropdown()"
-          [placeholder]="
-            isExercisesLoading ? 'Loading exercises...' : 'Search and select exercise...'
-          "
-          class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+      <div class="mt-2">
+        <app-exercise-search-select
+          [exercises]="excercises"
+          [loading]="isExercisesLoading"
+          [placeholder]="exercisePlaceholder"
+          [selectedExerciseId]="selectedExerciseId"
+          [selectedExerciseName]="selectedExerciseName"
+          (selectionChange)="onExerciseSelectionChange($event)"
         />
-
-        <input type="hidden" formControlName="excerciseId" />
-
-        @if (showExerciseDropdown && !isExercisesLoading) {
-          <div
-            class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-600 bg-slate-800 shadow-lg"
-          >
-            @if (filteredExercises.length === 0) {
-              <div class="px-3 py-2 text-sm text-slate-400">No exercises found.</div>
-            } @else {
-              @for (exercise of filteredExercises; track exercise.id) {
-                <button
-                  type="button"
-                  (mousedown)="selectExercise(exercise); $event.preventDefault()"
-                  class="block w-full px-3 py-2 text-left text-sm text-slate-100 hover:bg-slate-700"
-                >
-                  {{ exercise.name }}
-                </button>
-              }
-            }
-          </div>
-        }
       </div>
+
+      <input type="hidden" formControlName="excerciseId" />
 
       @if (form.controls.excerciseId.touched && form.controls.excerciseId.invalid) {
         <p class="mt-1 text-xs text-rose-400">Exercise is required.</p>

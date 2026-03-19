@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { UserRole } from '../../models/enums';
 import { UserService } from '../../services/user.service';
+import { SessionService } from '../../services/session.service';
 
 @Component({
   selector: 'app-login-page',
@@ -11,16 +12,24 @@ import { UserService } from '../../services/user.service';
   templateUrl: './login.page.html',
 })
 export class LoginPage {
-  private readonly fb = inject(FormBuilder);
-  private readonly userService = inject(UserService);
-  private readonly router = inject(Router);
+  constructor(
+    private readonly userService: UserService,
+    private readonly sessionService: SessionService,
+    private readonly router: Router,
+  ) {}
 
   errorMessage = '';
   isSubmitting = false;
 
-  readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
+  readonly form = new FormGroup({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
   });
 
   onSubmit(): void {
@@ -36,10 +45,14 @@ export class LoginPage {
       next: (user) => {
         this.isSubmitting = false;
         const roleAsString = UserRole[user.role] ?? String(user.role);
-        localStorage.setItem('currentUserName', user.name);
-        localStorage.setItem('currentUserId', user.id);
-        localStorage.setItem('currentUserRole', roleAsString);
-        this.router.navigate(['/app', user.id]);
+
+        this.sessionService.setSession({
+          userId: user.id,
+          userName: user.name,
+          userRole: roleAsString,
+        });
+
+        this.router.navigate(['/app']);
       },
       error: () => {
         this.isSubmitting = false;
